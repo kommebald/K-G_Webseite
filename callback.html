@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Callback</title>
+</head>
+<body>
+  <p>Discord Login wird verarbeitet...</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const token = params.get("access_token");
+
+    if (!token) {
+      alert("Discord-Login fehlgeschlagen.");
+    } else {
+      fetch("https://discord.com/api/users/@me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(user => {
+        const fullName = `${user.username}#${user.discriminator}`;
+        localStorage.setItem("discordName", fullName);
+        window.location.href = "Webseite.html";
+      })
+      .catch(() => {
+        alert("Fehler beim Abrufen der Discord-Daten.");
+      });
+    }
+  </script>
+</body>
+</html>

@@ -186,13 +186,14 @@ function filtern() {
   });
 }
 
-render();
 <script>
   // Theme automatisch setzen
   const theme = localStorage.getItem("theme");
   if (theme === "light") {
     document.body.classList.add("light");
   }
+
+  render();
 </script>
 
 </body>

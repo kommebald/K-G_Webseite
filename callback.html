@@ -21,8 +21,10 @@
       })
       .then(res => res.json())
       .then(user => {
-        const fullName = `${user.username}#${user.discriminator}`;
-        localStorage.setItem("discordName", fullName);
+        // Nur den reinen Benutzernamen speichern
+        const username = user.username;
+
+        localStorage.setItem("discordName", username);
         window.location.href = "Webseite.html";
       })
       .catch(() => {

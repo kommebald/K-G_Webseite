@@ -6,30 +6,28 @@
   <title>Dein Discord Food Hub</title>
   <style>
     :root {
-      --bg-color: #1e1e2f;
-      --text-color: white;
-      --tile-bg: #0078d7;
+      --bg: #1e1e2f;
+      --text: white;
+      --tile: #0078d7;
       --tile-hover: #005a9e;
     }
 
     body.light {
-      --bg-color: #f5f5f5;
-      --text-color: #111;
-      --tile-bg: #ffffff;
+      --bg: #f5f5f5;
+      --text: #111;
+      --tile: white;
       --tile-hover: #e0e0e0;
     }
 
     body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      background-color: var(--bg);
+      color: var(--text);
       font-family: "Segoe UI", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
       justify-content: center;
+      height: 100vh;
       transition: background-color 0.3s, color 0.3s;
     }
 
@@ -42,7 +40,7 @@
     }
 
     .tile {
-      background-color: var(--tile-bg);
+      background-color: var(--tile);
       border-radius: 10px;
       padding: 20px;
       text-align: center;
@@ -68,18 +66,11 @@
     .footer, #clock {
       position: fixed;
       font-size: 0.9em;
-      color: var(--text-color);
+      color: var(--text);
     }
 
-    .footer {
-      bottom: 10px;
-      left: 10px;
-    }
-
-    #clock {
-      bottom: 10px;
-      right: 10px;
-    }
+    .footer { bottom: 10px; left: 10px; }
+    #clock { bottom: 10px; right: 10px; }
 
     #theme-toggle {
       position: fixed;
@@ -88,8 +79,8 @@
       padding: 6px 14px;
       border: none;
       border-radius: 6px;
-      background-color: var(--tile-bg);
-      color: var(--text-color);
+      background-color: var(--tile);
+      color: var(--text);
       cursor: pointer;
     }
 
@@ -116,7 +107,6 @@
   <div id="clock">Uhrzeit wird geladen...</div>
 
   <script>
-    // Uhrzeit
     function updateClock() {
       const now = new Date().toLocaleTimeString("de-DE", { timeZone: "Europe/Berlin" });
       document.getElementById("clock").textContent = now;
@@ -124,19 +114,18 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Theme laden
-    const currentTheme = localStorage.getItem("theme");
-    if (currentTheme === "light") {
+    // Theme Setup
+    const theme = localStorage.getItem("theme");
+    if (theme === "light") {
       document.body.classList.add("light");
       document.getElementById("theme-toggle").textContent = "Dunkler Modus";
     }
 
-    // Toggle-Button
     document.getElementById("theme-toggle").addEventListener("click", () => {
       document.body.classList.toggle("light");
-      const isLight = document.body.classList.contains("light");
-      document.getElementById("theme-toggle").textContent = isLight ? "Dunkler Modus" : "Weißer Modus";
-      localStorage.setItem("theme", isLight ? "light" : "dark");
+      const light = document.body.classList.contains("light");
+      localStorage.setItem("theme", light ? "light" : "dark");
+      document.getElementById("theme-toggle").textContent = light ? "Dunkler Modus" : "Weißer Modus";
     });
   </script>
 </body>

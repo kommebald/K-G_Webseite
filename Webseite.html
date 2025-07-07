@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dein Discord Food Hub</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1e1e2f, #2e2e3f);
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+
+    .desktop {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      max-width: 500px;
+    }
+
+    .tile {
+      background-color: #0078d7;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+
+    .tile:hover {
+      transform: scale(1.05);
+      background-color: #005a9e;
+    }
+
+    .tile-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .tile-title {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="desktop">
+    <div class="tile" onclick="location.href='essen-bestellen.html'">
+      <div class="tile-icon">🍔</div>
+      <div class="tile-title">Essen bestellen</div>
+    </div>
+    <div class="tile" onclick="location.href='essenrechner.html'">
+      <div class="tile-icon">🧮</div>
+      <div class="tile-title">Essensrechner</div>
+    </div>
+  </div>
+  <div style="position: fixed; bottom: 10px; left: 10px; font-size: 0.9em; color: #ccc;">
+    Made by kommebald
+  </div>
+  <div id="clock" style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; color: #ccc;">
+    Uhrzeit wird geladen...
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date().toLocaleTimeString("de-DE", { timeZone: "Europe/Berlin" });
+      document.getElementById("clock").textContent = now;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>

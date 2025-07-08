@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Mobile</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e1e2f, #2e2e3f);
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      background-color: #5865F2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mobile Login mit Discord</h1>
+  <a href="https://discord.com/api/oauth2/authorize?client_id=1391820808963489874&redirect_uri=https%3A%2F%2Fkommebald.github.io%2Fcallback_mobile.html&response_type=token&scope=identify">
+    <button>Mit Discord anmelden</button>
+  </a>
+</body>
+</html>
+
+<!-- callback_mobile.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Mobile Callback</title>
+</head>
+<body>
+  <p>Mobile Login wird verarbeitet...</p>
+  <script>
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const token = params.get("access_token");
+    if (!token) {
+      alert("Discord-Login fehlgeschlagen.");
+    } else {
+      fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(user => {
+        localStorage.setItem("discordUser", JSON.stringify(user));
+        localStorage.setItem("discordName", user.username);
+        window.location.href = "webseite_mobile.html";
+      })
+      .catch(() => alert("Fehler beim Abrufen der Discord-Daten."));
+    }
+  </script>
+</body>
+</html>
+
+<!-- webseite_mobile.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Hub</title>
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    button, .tile {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 10px auto;
+      padding: 12px;
+      font-size: 1em;
+      background-color: #5865F2;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+    #profil {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    #profil img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <h1>📱 Mobile Startseite</h1>
+
+  <button onclick="location.href='essen-bestellen_mobile.html'">🍔 Essen bestellen</button>
+  <button onclick="location.href='essenrechner_mobile.html'">🧮 Essensrechner</button>
+  <button onclick="location.href='rueckmeldung_mobile.html'">📝 Rückmeldung</button>
+
+  <div id="profil">
+    <img id="avatar" src="" alt="Profil">
+    <span id="username">Benutzer</span>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("discordUser"));
+    if (user) {
+      document.getElementById("username").textContent = `${user.global_name || user.username}`;
+      document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+    }
+  </script>
+</body>
+</html>

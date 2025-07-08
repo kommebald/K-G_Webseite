@@ -5,17 +5,16 @@
   <title>Rückmeldung</title>
   <style>
     body {
-      background: #1e1e2f;
+      background-color: #1e1e2f;
       color: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       padding: 2rem;
     }
     .mitglied {
-      border: 1px solid #555;
+      background-color: #2e2e3f;
       border-radius: 8px;
+      margin-bottom: 1.5rem;
       padding: 1rem;
-      margin-bottom: 1rem;
-      background: #2e2e3f;
     }
     .mitglied-header {
       display: flex;
@@ -24,28 +23,32 @@
       cursor: pointer;
     }
     .mitglied-header img {
-      width: 40px;
-      height: 40px;
       border-radius: 50%;
+      width: 48px;
+      height: 48px;
     }
     .feedback-container {
       margin-top: 1rem;
     }
+    .feedback-list {
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
     textarea {
       width: 100%;
+      padding: 0.5rem;
       background: #333;
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 0.5rem;
       resize: vertical;
     }
     button {
       margin-top: 0.5rem;
-      padding: 0.5rem 1rem;
       background: #5865F2;
       color: white;
       border: none;
+      padding: 0.5rem 1rem;
       border-radius: 4px;
       cursor: pointer;
     }
@@ -57,92 +60,73 @@
 
   <script>
     const webhookUrl = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
-    const dummyUser = { id: "123", username: "Testuser" };
-    localStorage.setItem("discordUser", JSON.stringify(dummyUser));
 
     const testMitglieder = [
       {
         id: "1",
         name: "Max Mustermann",
-        avatar: "https://cdn.discordapp.com/embed/avatars/1.png"
+        avatar: "https://cdn.discordapp.com/embed/avatars/0.png"
       }
     ];
 
-    function ladeFeedback(id) {
-      const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
-      return all[id] || [];
-    }
+    const discordUser = { username: "kommebald" };
 
-    function speichereFeedback(id, eintrag) {
-      const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
-      if (!all[id]) all[id] = [];
-      all[id].push(eintrag);
-      localStorage.setItem("feedbacks", JSON.stringify(all));
-    }
+    const liste = document.getElementById("liste");
 
-    function erstelleMitgliederListe() {
-      const discordUser = JSON.parse(localStorage.getItem("discordUser"));
-      const liste = document.getElementById("liste");
+    testMitglieder.forEach(user => {
+      const block = document.createElement("div");
+      block.className = "mitglied";
 
-      testMitglieder.forEach(user => {
-        const container = document.createElement("div");
-        container.className = "mitglied";
+      const header = document.createElement("div");
+      header.className = "mitglied-header";
+      header.innerHTML = `<img src="${user.avatar}"><strong>${user.name}</strong>`;
+      block.appendChild(header);
 
-        const header = document.createElement("div");
-        header.className = "mitglied-header";
-        header.innerHTML = `<img src="${user.avatar}"><strong>${user.name}</strong>`;
+      let feedbackBox = null;
 
-        let offen = false;
-        let feedbackDiv;
+      header.addEventListener("click", () => {
+        if (feedbackBox) {
+          feedbackBox.remove();
+          feedbackBox = null;
+          return;
+        }
 
-        header.addEventListener("click", () => {
-          if (offen) {
-            feedbackDiv.remove();
-            offen = false;
-            return;
-          }
-          offen = true;
-          feedbackDiv = document.createElement("div");
-          feedbackDiv.className = "feedback-container";
+        feedbackBox = document.createElement("div");
+        feedbackBox.className = "feedback-container";
 
-          const feedbacks = ladeFeedback(user.id);
-          const list = document.createElement("div");
-          list.innerHTML = feedbacks.map(f => `• ${f}`).join("<br>") || "<em>Keine Feedbacks</em>";
+        const list = document.createElement("div");
+        list.className = "feedback-list";
+        list.innerHTML = "<em>Keine Feedbacks</em>";
 
-          const textarea = document.createElement("textarea");
-          const button = document.createElement("button");
-          button.textContent = "Absenden";
+        const input = document.createElement("textarea");
+        input.placeholder = "Feedback schreiben...";
 
-          button.onclick = () => {
-            const val = textarea.value.trim();
-            if (!val) return;
+        const send = document.createElement("button");
+        send.textContent = "Absenden";
 
-            const msg = `${discordUser.username}: ${val}`;
-            speichereFeedback(user.id, msg);
-            list.innerHTML += `<br>• ${msg}`;
-            textarea.value = "";
+        send.onclick = () => {
+          const msg = input.value.trim();
+          if (!msg) return;
 
-            fetch(webhookUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                content: `**Feedback für ${user.name}:**\n> ${msg}`
-              })
-            });
-          };
+          const eintrag = `${discordUser.username}: ${msg}`;
+          list.innerHTML += `<br>• ${eintrag}`;
+          input.value = "";
 
-          feedbackDiv.appendChild(list);
-          feedbackDiv.appendChild(textarea);
-          feedbackDiv.appendChild(button);
-          container.appendChild(feedbackDiv);
-        });
+          fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: `**Feedback für ${user.name}:**\n> ${eintrag}` })
+          });
+        };
 
-        container.appendChild(header);
-        liste.appendChild(container);
+        feedbackBox.appendChild(list);
+        feedbackBox.appendChild(input);
+        feedbackBox.appendChild(send);
+        block.appendChild(feedbackBox);
       });
-    }
 
-    erstelleMitgliederListe();
+      liste.appendChild(block);
+    });
   </script>
 </body>
 </html>

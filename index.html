@@ -1,69 +1,27 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Willkommen – Discord Food Hub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weiterleitung...</title>
   <style>
     body {
+      background: #1e1e2f;
+      color: white;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2e2e3f);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
       text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    .button {
-      padding: 12px 24px;
-      margin: 10px;
-      font-size: 18px;
-      border: none;
-      border-radius: 8px;
-      background-color: #5865F2;
-      color: white;
-      cursor: pointer;
-    }
-
-    .button:hover {
-      background-color: #4752c4;
-    }
-
-    #manual {
-      margin-top: 20px;
-      display: none;
+      padding-top: 100px;
     }
   </style>
 </head>
 <body>
-  <h1>Willkommen 👋</h1>
-  <p>Du wirst gleich weitergeleitet...</p>
-
-  <div id="manual">
-    <p>Keine automatische Weiterleitung? Wähle deine Version:</p>
-    <button class="button" onclick="window.location.href='mobile/index.html'">📱 Handy-Version</button>
-    <button class="button" onclick="window.location.href='desktop/index.html'">💻 PC-Version</button>
-  </div>
+  <h1>⏳ Du wirst weitergeleitet...</h1>
+  <p>Wir erkennen dein Gerät und leiten dich automatisch weiter.</p>
 
   <script>
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-
-    setTimeout(() => {
-      const ziel = isMobile ? "mobile/index.html" : "desktop/index.html";
-      if (confirm(`Möchtest du die ${isMobile ? "Handy" : "PC"}-Version öffnen?`)) {
-        window.location.href = ziel;
-      } else {
-        document.getElementById("manual").style.display = "block";
-      }
-    }, 1500);
+    const ziel = isMobile ? "index_mobile.html" : "index_desktop.html";
+    window.location.href = ziel;
   </script>
 </body>
 </html>

@@ -2,149 +2,157 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Rückmeldung geben</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rückmeldung Mobile</title>
   <style>
     body {
       background-color: #1e1e2f;
       color: white;
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 1rem;
+      transition: background-color 0.3s, color 0.3s;
     }
-    h1 {
-      text-align: right;
+    body.light {
+      background-color: #f5f5f5;
+      color: #111;
     }
     .mitglied {
-      background: #2e2e3f;
-      padding: 10px;
+      background-color: #2e2e3f;
+      margin-bottom: 1rem;
+      padding: 1rem;
       border-radius: 8px;
-      margin-bottom: 10px;
-      cursor: pointer;
+    }
+    body.light .mitglied {
+      background-color: #fff;
+      color: #000;
+    }
+    .mitglied-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 0.5rem;
+      cursor: pointer;
     }
-    .mitglied img {
+    .mitglied-header img {
       border-radius: 50%;
       width: 40px;
       height: 40px;
-      margin-right: 10px;
     }
     .feedback-container {
-      margin-top: 10px;
-      background: #1a1a2f;
-      padding: 10px;
-      border-radius: 6px;
-    }
-    .feedback-container textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 4px;
-      border: none;
-      background: #2a2a3f;
-      color: white;
-      resize: vertical;
-    }
-    .feedback-container button {
-      margin-top: 10px;
-      background: #5865F2;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
+      margin-top: 0.5rem;
     }
     .feedback-list {
-      margin-bottom: 10px;
-      padding-left: 10px;
-      border-left: 2px solid #444;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: none;
+      resize: vertical;
+      background: #333;
+      color: white;
+    }
+    body.light textarea {
+      background: #eee;
+      color: black;
+    }
+    button.senden {
+      background: #5865F2;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    .zurueck {
+      margin-top: 2rem;
+      background: #444;
+      border: none;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <h1>Rückmeldung geben</h1>
-  <div id="liste"></div>
-  <button onclick="window.location.href='Webseite.html'">Zurück</button>
+<h2>Rückmeldung</h2>
+<div id="liste"></div>
+<button class="zurueck" onclick="window.location.href='Webseite.html'">€Zurück</button>
 
-  <script>
-    const user = JSON.parse(localStorage.getItem("discordUser"));
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
-    const API_URL = "https://food-feedback-bot.onrender.com";
+<script>
+const webhookUrl = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
+const apiUrl = "https://food-feedback-bot.onrender.com/rolle/1340398700136104069";
+const discordUser = JSON.parse(localStorage.getItem("discordUser"));
 
-    async function ladeMitglieder() {
-      try {
-        const res = await fetch(`${API_URL}/rolle/1340398700136104069`);
-        const daten = await res.json();
-        const container = document.getElementById("liste");
-        container.innerHTML = "";
+function ladeFeedback(id) {
+  const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
+  return all[id] || [];
+}
 
-        daten.forEach(m => {
-          const div = document.createElement("div");
-          div.className = "mitglied";
-          div.innerHTML = `
-            <span><img src="https://cdn.discordapp.com/avatars/${m.id}/${m.avatar}.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"> ${m.display_name} (${m.username})</span>
-          `;
+function speichereFeedback(id, eintrag) {
+  const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
+  if (!all[id]) all[id] = [];
+  all[id].push(eintrag);
+  localStorage.setItem("feedbacks", JSON.stringify(all));
+}
 
-          div.addEventListener("click", () => zeigeFeedbackFeld(div, m));
-          container.appendChild(div);
-        });
-      } catch (e) {
-        document.getElementById("liste").innerHTML = "<p>Fehler beim Laden der Mitglieder.</p>";
-      }
-    }
+async function ladeMitglieder() {
+  const res = await fetch(apiUrl);
+  const daten = await res.json();
+  const container = document.getElementById("liste");
+  daten.forEach(user => {
+    const el = document.createElement("div");
+    el.className = "mitglied";
+    el.innerHTML = `
+      <div class="mitglied-header">
+        <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png">
+        <strong>${user.display_name || user.username} (${user.username})</strong>
+      </div>
+    `;
+    el.querySelector(".mitglied-header").onclick = () => {
+      if (el.querySelector(".feedback-container")) return;
+      const feedbackDiv = document.createElement("div");
+      feedbackDiv.className = "feedback-container";
 
-    function zeigeFeedbackFeld(parent, userInfo) {
-      if (parent.querySelector(".feedback-container")) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "feedback-container";
-
-      const feedbackList = document.createElement("div");
-      feedbackList.className = "feedback-list";
-      feedbackList.innerHTML = ladeFeedback(userInfo.id)
-        .map(msg => `<div>• ${msg}</div>`).join("") || "<em>Keine bisherigen Rückmeldungen.</em>";
+      const list = ladeFeedback(user.id);
+      const listDiv = document.createElement("div");
+      listDiv.className = "feedback-list";
+      listDiv.innerHTML = list.length ? list.map(f => `• ${f}`).join("<br>") : "<em>Keine Feedbacks.</em>";
 
       const textarea = document.createElement("textarea");
-      textarea.placeholder = "Dein Feedback hier eingeben...";
+      textarea.placeholder = "Feedback schreiben...";
 
       const btn = document.createElement("button");
+      btn.className = "senden";
       btn.textContent = "Absenden";
       btn.onclick = () => {
-        const text = textarea.value.trim();
-        if (!text) return;
+        const val = textarea.value.trim();
+        if (!val) return;
+        const msg = `${discordUser.username}: ${val}`;
+        speichereFeedback(user.id, msg);
+        listDiv.innerHTML += `<br>• ${msg}`;
+        textarea.value = "";
 
-        speichereFeedback(userInfo.id, text);
-        feedbackList.innerHTML += `<div>• ${text}</div>`;
-
-        fetch(WEBHOOK_URL, {
+        fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `💬 Neue Rückmeldung zu **${userInfo.display_name || userInfo.username}**:\n> ${text}\nVon: ${user.username}`
-          })
+          body: JSON.stringify({ content: `**Feedback für ${user.display_name || user.username}:**\n> ${msg}` })
         });
-
-        textarea.value = "";
       };
 
-      wrapper.appendChild(feedbackList);
-      wrapper.appendChild(textarea);
-      wrapper.appendChild(btn);
-      parent.appendChild(wrapper);
-    }
+      feedbackDiv.appendChild(listDiv);
+      feedbackDiv.appendChild(textarea);
+      feedbackDiv.appendChild(btn);
+      el.appendChild(feedbackDiv);
+    };
+    container.appendChild(el);
+  });
+}
 
-    function ladeFeedback(id) {
-      return JSON.parse(localStorage.getItem("feedbacks-" + id)) || [];
-    }
-
-    function speichereFeedback(id, text) {
-      const arr = ladeFeedback(id);
-      arr.push(text);
-      localStorage.setItem("feedbacks-" + id, JSON.stringify(arr));
-    }
-
-    ladeMitglieder();
-  </script>
+if (localStorage.getItem("theme") === "light") document.body.classList.add("light");
+ladeMitglieder();
+</script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rückmeldung</title>
   <style>
     body {
@@ -25,34 +25,20 @@
       margin: 10px 0;
       border-radius: 6px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
     body.light .mitglied {
       background-color: #fff;
       border: 1px solid #ccc;
     }
-    .mitglied-name {
-      display: flex;
-      flex-direction: column;
-    }
-    .mitglied img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-left: 10px;
-    }
     .feedback-liste {
       margin-top: 8px;
       font-size: 0.9em;
-      width: 100%;
     }
     .feedback-item {
       background-color: #444;
       padding: 6px;
       border-radius: 4px;
-      margin-top: 5px;
+      margin-bottom: 5px;
     }
     body.light .feedback-item {
       background-color: #eee;
@@ -86,11 +72,20 @@
     body.light button {
       background-color: #0078d7;
     }
+    #zurueck {
+      margin-top: 30px;
+      background-color: #444;
+    }
+    body.light #zurueck {
+      background-color: #ccc;
+      color: black;
+    }
   </style>
 </head>
 <body>
 <h1>Rückmeldung geben</h1>
 <div id="liste">Lade Mitglieder...</div>
+
 <div id="feedback-bereich" style="display:none">
   <h2 id="ziel-nutzer"></h2>
   <textarea id="feedback" placeholder="Dein Feedback..."></textarea>
@@ -98,10 +93,12 @@
   <button onclick="sendeFeedback()">Abschicken</button>
 </div>
 
+<!-- ✅ Zurück-Button -->
+<button id="zurueck" onclick="window.location.href='Webseite.html'">Zurück</button>
+
 <script>
-const webhook = "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL";
-const roleId = "1340398700136104069";
-const backendURL = "https://c80b35ce-76f1-480e-8b66-6e869839bf54-00-2r2lfkkv36n4m.picard.replit.dev";
+const webhook = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
+const roleId = "1340398700136104069"; // Deine Role ID
 let zielID = "";
 
 function ladeFeedbacks() {
@@ -111,18 +108,12 @@ function ladeFeedbacks() {
 function zeigeMitglieder(mitglieder) {
   const feedbacks = ladeFeedbacks();
   document.getElementById("liste").innerHTML = "";
-
   mitglieder.forEach(m => {
     const div = document.createElement("div");
     div.className = "mitglied";
-
-    const info = document.createElement("div");
-    info.className = "mitglied-name";
-    info.innerHTML = `<strong>${m.global_name}</strong><span style="color: #aaa; font-size: 0.85em;">(${m.username})</span>`;
-
-    const avatar = document.createElement("img");
-    avatar.src = `https://cdn.discordapp.com/avatars/${m.id}/${m.avatar}.png`;
-    avatar.alt = "Profilbild";
+    const name = document.createElement("div");
+    name.textContent = `${m.global_name} (${m.username})`;
+    name.style.fontWeight = "bold";
 
     const feedbackDiv = document.createElement("div");
     feedbackDiv.className = "feedback-liste";
@@ -136,12 +127,11 @@ function zeigeMitglieder(mitglieder) {
 
     div.onclick = () => {
       zielID = m.id;
-      document.getElementById("ziel-nutzer").textContent = `Feedback für ${m.global_name}`;
+      document.getElementById("ziel-nutzer").textContent = `Feedback für ${m.global_name || m.username}`;
       document.getElementById("feedback-bereich").style.display = "block";
     };
 
-    div.appendChild(info);
-    div.appendChild(avatar);
+    div.appendChild(name);
     div.appendChild(feedbackDiv);
     document.getElementById("liste").appendChild(div);
   });
@@ -160,7 +150,6 @@ function sendeFeedback() {
   const data = {
     content: `📝 **Feedback von ${sender}** für <@${zielID}>:\n${text}`
   };
-
   fetch(webhook, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -178,7 +167,7 @@ function sendeFeedback() {
 }
 
 function holeMitglieder() {
-  fetch(`${backendURL}/rolle/${roleId}`)
+  fetch(`/rolle/${roleId}`)
     .then(res => res.json())
     .then(zeigeMitglieder)
     .catch(() => {
@@ -186,6 +175,7 @@ function holeMitglieder() {
     });
 }
 
+// Darkmode aktivieren
 const theme = localStorage.getItem("theme");
 if (theme === "light") document.body.classList.add("light");
 

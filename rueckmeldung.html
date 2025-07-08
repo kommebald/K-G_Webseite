@@ -5,50 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rückmeldung</title>
   <style>
-    :root {
-      --bg: #1e1e2f;
-      --text: white;
-      --box: #2e2e3f;
-      --input: #333;
-      --feedback-bg: #444;
-      --btn: #5865F2;
-    }
-    body.light {
-      --bg: #f5f5f5;
-      --text: #111;
-      --box: #fff;
-      --input: white;
-      --feedback-bg: #eee;
-      --btn: #0078d7;
-    }
     body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: #1e1e2f;
+      color: white;
       font-family: Arial, sans-serif;
       padding: 20px;
       margin: 0;
-      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light {
+      background-color: #f5f5f5;
+      color: #111;
     }
     h1 {
       text-align: center;
     }
     .mitglied {
-      background-color: var(--box);
+      background-color: #2e2e3f;
       padding: 10px;
       margin: 10px 0;
       border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s;
+    }
+    body.light .mitglied {
+      background-color: #fff;
+      border: 1px solid #ccc;
     }
     .feedback-liste {
       margin-top: 8px;
       font-size: 0.9em;
     }
     .feedback-item {
-      background-color: var(--feedback-bg);
+      background-color: #444;
       padding: 6px;
       border-radius: 4px;
       margin-bottom: 5px;
+    }
+    body.light .feedback-item {
+      background-color: #eee;
+      color: #111;
     }
     textarea {
       width: 100%;
@@ -58,24 +52,31 @@
       padding: 10px;
       font-size: 1em;
       border-radius: 5px;
-      background-color: var(--input);
-      color: var(--text);
+      background-color: #333;
+      color: white;
       border: 1px solid #555;
+    }
+    body.light textarea {
+      background-color: white;
+      color: black;
     }
     button {
       margin-top: 10px;
       padding: 10px 20px;
-      background-color: var(--btn);
+      background-color: #5865F2;
       border: none;
       border-radius: 5px;
       color: white;
       cursor: pointer;
     }
+    body.light button {
+      background-color: #0078d7;
+    }
   </style>
 </head>
 <body>
 <h1>Rückmeldung geben</h1>
-<div id="liste"></div>
+<div id="liste">Lade Mitglieder...</div>
 <div id="feedback-bereich" style="display:none">
   <h2 id="ziel-nutzer"></h2>
   <textarea id="feedback" placeholder="Dein Feedback..."></textarea>
@@ -84,20 +85,14 @@
 </div>
 <script>
 const webhook = "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL";
-
-const mitglieder = [
-  { name: "MaxMuster", id: "123" },
-  { name: "PolizeiBot", id: "456" },
-  { name: "DienstHabend", id: "789" },
-];
-
+const roleId = "1340398700136104069";
 let zielID = "";
 
 function ladeFeedbacks() {
   return JSON.parse(localStorage.getItem("feedbacks")) || {};
 }
 
-function zeigeMitglieder() {
+function zeigeMitglieder(mitglieder) {
   const feedbacks = ladeFeedbacks();
   document.getElementById("liste").innerHTML = "";
   mitglieder.forEach(m => {
@@ -151,16 +146,25 @@ function sendeFeedback() {
       alert("Feedback gesendet!");
       document.getElementById("feedback").value = "";
       document.getElementById("feedback-bereich").style.display = "none";
-      zeigeMitglieder();
+      holeMitglieder();
     } else {
       alert("Fehler beim Senden.");
     }
   });
 }
 
+function holeMitglieder() {
+  fetch(`/rolle/${roleId}`)
+    .then(res => res.json())
+    .then(zeigeMitglieder)
+    .catch(() => {
+      document.getElementById("liste").textContent = "Fehler beim Laden der Mitglieder.";
+    });
+}
+
 const theme = localStorage.getItem("theme");
 if (theme === "light") document.body.classList.add("light");
-zeigeMitglieder();
+holeMitglieder();
 </script>
 </body>
 </html>

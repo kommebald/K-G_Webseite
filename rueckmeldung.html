@@ -23,6 +23,7 @@
       margin-bottom: 1.5rem;
       padding: 1rem;
       border-radius: 8px;
+      position: relative;
     }
 
     body.light .mitglied {
@@ -45,6 +46,7 @@
 
     .feedback-container {
       margin-top: 1rem;
+      z-index: 10;
     }
 
     .feedback-list {
@@ -60,6 +62,8 @@
       resize: vertical;
       background: #333;
       color: white;
+      margin-top: 0.5rem;
+      z-index: 2;
     }
 
     body.light textarea {
@@ -74,6 +78,8 @@
       border: none;
       border-radius: 4px;
       margin-top: 0.5rem;
+      cursor: pointer;
+      z-index: 3;
     }
 
     .zurueck {
@@ -83,6 +89,14 @@
       color: white;
       padding: 0.5rem 1rem;
       border-radius: 4px;
+      cursor: pointer;
+    }
+
+    @media (hover: hover) {
+      button.senden:hover,
+      .zurueck:hover {
+        opacity: 0.9;
+      }
     }
   </style>
 </head>
@@ -116,21 +130,26 @@
     daten.forEach(user => {
       const el = document.createElement("div");
       el.className = "mitglied";
-      el.innerHTML = `
-        <div class="mitglied-header">
-          <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-          <strong>${user.name}</strong>
-        </div>
+
+      const header = document.createElement("div");
+      header.className = "mitglied-header";
+      header.innerHTML = `
+        <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+        <strong>${user.name}</strong>
       `;
 
-      el.querySelector(".mitglied-header").onclick = () => {
-        const existing = el.querySelector(".feedback-container");
-        if (existing) {
-          existing.remove();
+      let offen = false;
+      let feedbackDiv;
+
+      header.addEventListener("click", () => {
+        if (offen) {
+          feedbackDiv.remove();
+          offen = false;
           return;
         }
 
-        const feedbackDiv = document.createElement("div");
+        offen = true;
+        feedbackDiv = document.createElement("div");
         feedbackDiv.className = "feedback-container";
 
         const list = ladeFeedback(user.id);
@@ -146,7 +165,8 @@
         const btn = document.createElement("button");
         btn.className = "senden";
         btn.textContent = "Absenden";
-        btn.onclick = () => {
+
+        btn.addEventListener("click", () => {
           const val = textarea.value.trim();
           if (!val) return;
           const msg = `${discordUser.username}: ${val}`;
@@ -161,14 +181,15 @@
               content: `**Feedback für ${user.name}:**\n> ${msg}`
             })
           });
-        };
+        });
 
         feedbackDiv.appendChild(listDiv);
         feedbackDiv.appendChild(textarea);
         feedbackDiv.appendChild(btn);
         el.appendChild(feedbackDiv);
-      };
+      });
 
+      el.appendChild(header);
       container.appendChild(el);
     });
   }

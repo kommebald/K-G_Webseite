@@ -11,12 +11,14 @@
       --tile: #0078d7;
       --tile-hover: #005a9e;
     }
+
     body.light {
       --bg: #f5f5f5;
       --text: #111;
       --tile: white;
       --tile-hover: #e0e0e0;
     }
+
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -26,17 +28,19 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      transition: background-color 0.3s, color 0.3s;
       margin: 0;
+      transition: background-color 0.3s, color 0.3s;
     }
+
     .desktop {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 20px;
-      max-width: 600px;
-      width: 90%;
+      max-width: 500px;
       margin-bottom: 20px;
+      width: 90%;
     }
+
     .tile {
       background-color: var(--tile);
       border-radius: 10px;
@@ -46,22 +50,27 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       transition: transform 0.2s, background-color 0.3s;
     }
+
     .tile:hover {
       transform: scale(1.05);
       background-color: var(--tile-hover);
     }
+
     .tile-icon {
       font-size: 40px;
       margin-bottom: 10px;
     }
+
     .tile-title {
       font-size: 18px;
     }
+
     .footer, #clock {
       position: fixed;
       font-size: 0.9em;
       color: var(--text);
     }
+
     .footer { bottom: 10px; left: 10px; }
     #clock { bottom: 10px; right: 10px; }
 
@@ -76,6 +85,7 @@
       color: var(--text);
       cursor: pointer;
     }
+
     #theme-toggle:hover {
       background-color: var(--tile-hover);
     }
@@ -83,7 +93,8 @@
     #profil {
       position: fixed;
       bottom: 10px;
-      right: 90px;
+      left: 50%;
+      transform: translateX(-50%);
       background: rgba(0,0,0,0.7);
       color: white;
       padding: 10px;
@@ -93,6 +104,12 @@
       align-items: center;
       gap: 10px;
     }
+
+    body.light #profil {
+      background: rgba(255, 255, 255, 0.8);
+      color: #111;
+    }
+
     #profil img {
       width: 40px;
       height: 40px;
@@ -103,7 +120,7 @@
 <body>
   <button id="theme-toggle">Weißer Modus</button>
 
-  <div class="desktop" id="tile-container">
+  <div class="desktop">
     <div class="tile" onclick="location.href='essen-bestellen.html'">
       <div class="tile-icon">🍔</div>
       <div class="tile-title">Essen bestellen</div>
@@ -116,7 +133,10 @@
       <div class="tile-icon">📝</div>
       <div class="tile-title">Rückmeldung</div>
     </div>
-    <!-- Admin tile wird per JS hinzugefügt -->
+    <div class="tile" onclick="pruefeAdmin()">
+      <div class="tile-icon">🛠️</div>
+      <div class="tile-title">Admin Panel</div>
+    </div>
   </div>
 
   <div class="footer">Made by kommebald</div>
@@ -128,6 +148,7 @@
   </div>
 
   <script>
+    // Uhrzeit
     function updateClock() {
       const now = new Date().toLocaleTimeString("de-DE", { timeZone: "Europe/Berlin" });
       document.getElementById("clock").textContent = now;
@@ -135,7 +156,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Theme handling
+    // Theme
     const theme = localStorage.getItem("theme");
     if (theme === "light") {
       document.body.classList.add("light");
@@ -149,28 +170,32 @@
       document.getElementById("theme-toggle").textContent = light ? "Dunkler Modus" : "Weißer Modus";
     });
 
-    // Profil laden
+    // Profilanzeige laden
     const storedUser = JSON.parse(localStorage.getItem("discordUser"));
     if (storedUser) {
       document.getElementById("username").textContent = `${storedUser.global_name || storedUser.username}`;
-      document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`;
+      document.getElementById("avatar").src = storedUser.avatar
+        ? `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`
+        : "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
 
-      const adminIds = [
+    // Adminprüfung
+    function pruefeAdmin() {
+      const allowedIDs = [
         "1063895939724624023",
         "1196556299597521027",
         "1072146615252566158"
       ];
-      if (adminIds.includes(storedUser.id)) {
-        const adminTile = document.createElement("div");
-        adminTile.className = "tile";
-        adminTile.onclick = () => location.href = "admin.html";
-        adminTile.innerHTML = `
-          <div class="tile-icon">🔒</div>
-          <div class="tile-title">Admin Panel</div>
-        `;
-        document.getElementById("tile-container").appendChild(adminTile);
+      const user = JSON.parse(localStorage.getItem("discordUser"));
+
+      if (user && allowedIDs.includes(user.id)) {
+        location.href = "admin.html";
+      } else {
+        alert("Du hast keinen Zugriff auf das Admin Panel.");
+        location.href = "webseite.html";
       }
     }
   </script>
 </body>
 </html>
+

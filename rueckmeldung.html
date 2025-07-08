@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rückmeldung</title>
+  <title>Rückmeldung geben</title>
   <style>
     body {
       background-color: #1e1e2f;
@@ -12,13 +12,16 @@
       padding: 20px;
       margin: 0;
     }
+
     body.light {
       background-color: #f5f5f5;
       color: #111;
     }
+
     h1 {
       text-align: center;
     }
+
     .mitglied {
       background-color: #2e2e3f;
       padding: 10px;
@@ -26,24 +29,29 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     body.light .mitglied {
       background-color: #fff;
       border: 1px solid #ccc;
     }
+
     .feedback-liste {
       margin-top: 8px;
       font-size: 0.9em;
     }
+
     .feedback-item {
       background-color: #444;
       padding: 6px;
       border-radius: 4px;
       margin-bottom: 5px;
     }
+
     body.light .feedback-item {
       background-color: #eee;
       color: #111;
     }
+
     textarea {
       width: 100%;
       max-width: 500px;
@@ -56,10 +64,12 @@
       color: white;
       border: 1px solid #555;
     }
+
     body.light textarea {
       background-color: white;
       color: black;
     }
+
     button {
       margin-top: 10px;
       padding: 10px 20px;
@@ -69,6 +79,7 @@
       color: white;
       cursor: pointer;
     }
+
     body.light button {
       background-color: #0078d7;
     }
@@ -77,33 +88,43 @@
 <body>
 <h1>Rückmeldung geben</h1>
 <div id="liste">Lade Mitglieder...</div>
+
 <div id="feedback-bereich" style="display:none">
   <h2 id="ziel-nutzer"></h2>
-  <textarea id="feedback" placeholder="Dein Feedback..."></textarea>
-  <br>
+  <textarea id="feedback" placeholder="Dein Feedback..."></textarea><br>
   <button onclick="sendeFeedback()">Abschicken</button>
 </div>
+
 <script>
-const webhook = "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL";
-const roleId = "1340398700136104069";
+const webhook = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa"; // <-- anpassen
+const roleId = "1340398700136104069"; // <-- Deine Discord-Rolle
 let zielID = "";
 
+// Theme anwenden
+const theme = localStorage.getItem("theme");
+if (theme === "light") document.body.classList.add("light");
+
+// Feedback aus localStorage laden
 function ladeFeedbacks() {
   return JSON.parse(localStorage.getItem("feedbacks")) || {};
 }
 
+// Mitglieder anzeigen
 function zeigeMitglieder(mitglieder) {
   const feedbacks = ladeFeedbacks();
   document.getElementById("liste").innerHTML = "";
+
   mitglieder.forEach(m => {
     const div = document.createElement("div");
     div.className = "mitglied";
+
     const name = document.createElement("div");
     name.textContent = m.name;
     name.style.fontWeight = "bold";
 
     const feedbackDiv = document.createElement("div");
     feedbackDiv.className = "feedback-liste";
+
     const eintraege = feedbacks[m.id] || [];
     eintraege.forEach(e => {
       const f = document.createElement("div");
@@ -124,6 +145,7 @@ function zeigeMitglieder(mitglieder) {
   });
 }
 
+// Feedback absenden
 function sendeFeedback() {
   const text = document.getElementById("feedback").value.trim();
   const sender = localStorage.getItem("discordName") || "Unbekannt";
@@ -137,6 +159,7 @@ function sendeFeedback() {
   const data = {
     content: `📝 **Feedback von ${sender}** für <@${zielID}>:\n${text}`
   };
+
   fetch(webhook, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -153,6 +176,7 @@ function sendeFeedback() {
   });
 }
 
+// Mitglieder mit Rolle abrufen
 function holeMitglieder() {
   fetch(`/rolle/${roleId}`)
     .then(res => res.json())
@@ -162,8 +186,6 @@ function holeMitglieder() {
     });
 }
 
-const theme = localStorage.getItem("theme");
-if (theme === "light") document.body.classList.add("light");
 holeMitglieder();
 </script>
 </body>

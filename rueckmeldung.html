@@ -100,16 +100,9 @@
     <button onclick="sendeFeedback()">Absenden</button>
   </div>
 
-  <button class="zurueck" onclick="window.location.href='Webseite.html'">Zurück</button>
+  <button class="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
   <script>
-    const personen = [
-      {"id":"1063895939724624023","name":"50 | GF | Juli (motorrad_fan)","avatar":"https://cdn.discordapp.com/avatars/1063895939724624023/ab7f8572bcc17767bd75f94e941ae577.png"},
-      {"id":"1196556299597521027","name":"49 | GF | Lami (kommebald)","avatar":"https://cdn.discordapp.com/avatars/1196556299597521027/92c1869a0706b9015ae585972724aba8.png"},
-      {"id":"1072146615252566158","name":"50 | GF | Tobi (tobi_0o)","avatar":"https://cdn.discordapp.com/avatars/1072146615252566158/259d7d9477af2d03bad695d3444c275a.png"},
-      {"id":"1272161557589000275","name":"Heymoritz852 (moritz_ehrn)","avatar":"https://cdn.discordapp.com/avatars/1272161557589000275/c254390c5eef92c5eba335a32bf5d6a0.png"}
-    ];
-
     const user = JSON.parse(localStorage.getItem("discordUser") || "{}");
     const absenderName = user.global_name || user.username || "Unbekannt";
 
@@ -119,20 +112,24 @@
     const container = document.getElementById("feedbackContainer");
     const feedbackAnzeige = document.getElementById("feedbackAnzeige");
 
-    personen.forEach(p => {
-      const div = document.createElement("div");
-      div.className = "person";
-      div.innerHTML = `<img src="${p.avatar}" alt="pfp"><strong>${p.name}</strong>`;
-      div.onclick = () => {
-        document.querySelectorAll(".person").forEach(e => e.classList.remove("selected"));
-        div.classList.add("selected");
-        ausgewaehlt = p;
-        feedbackAnzeige.textContent = `Feedback an: ${p.name}`;
-        container.style.display = "block";
-        ladeFeedbacks(p.id);
-      };
-      liste.appendChild(div);
-    });
+    fetch("https://food-feedback-bot.onrender.com/api/rolle/1340398700136104069")
+      .then(r => r.json())
+      .then(personen => {
+        personen.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "person";
+          div.innerHTML = `<img src="${p.avatar}" alt="pfp"><strong>${p.name}</strong>`;
+          div.onclick = () => {
+            document.querySelectorAll(".person").forEach(e => e.classList.remove("selected"));
+            div.classList.add("selected");
+            ausgewaehlt = p;
+            feedbackAnzeige.textContent = `Feedback an: ${p.name}`;
+            container.style.display = "block";
+            ladeFeedbacks(p.id);
+          };
+          liste.appendChild(div);
+        });
+      });
 
     function ladeFeedbacks(id) {
       const out = document.getElementById("bisherigeFeedbacks");
@@ -156,7 +153,6 @@
       const text = document.getElementById("feedbackText").value.trim();
       if (!text) return alert("Feedback darf nicht leer sein.");
 
-      // Lokale API speichern
       fetch("https://food-feedback-bot.onrender.com/api/feedbacks", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -165,9 +161,8 @@
           from: absenderName,
           message: text
         })
-      }).catch(() => {});
+      });
 
-      // Discord Webhook
       fetch("https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -187,7 +182,6 @@
       });
     }
 
-    // Theme sync
     if (localStorage.getItem("theme") === "light") {
       document.body.classList.add("light");
     }

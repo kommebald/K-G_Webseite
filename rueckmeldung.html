@@ -1,190 +1,208 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Rückmeldung geben</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       background-color: #1e1e2f;
       color: white;
       font-family: Arial, sans-serif;
-      margin: 0;
       padding: 20px;
+      margin: 0;
     }
+
     body.light {
       background-color: #f5f5f5;
       color: #111;
     }
+
     h1 {
       text-align: center;
-      margin-bottom: 30px;
     }
-    .person {
+
+    .mitglied {
       display: flex;
       align-items: center;
-      padding: 10px;
-      background-color: #2c2c3c;
+      gap: 12px;
+      background: #2a2a3d;
       border-radius: 8px;
+      padding: 10px;
       margin-bottom: 10px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background 0.2s;
     }
-    .person:hover {
-      background-color: #3a3a4a;
+
+    body.light .mitglied {
+      background: #e0e0e0;
     }
-    .person.selected {
-      background-color: #4444aa;
+
+    .mitglied.selected {
+      outline: 2px solid #5865F2;
     }
-    .person img {
+
+    .mitglied img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      margin-right: 10px;
     }
+
     #feedbackContainer {
-      margin-top: 30px;
+      margin-top: 20px;
       display: none;
+      flex-direction: column;
+      gap: 8px;
     }
-    textarea {
+
+    #feedbackContainer textarea {
       width: 100%;
       height: 100px;
-      margin-top: 10px;
+      resize: vertical;
       padding: 10px;
-      border-radius: 6px;
-      border: none;
       font-size: 1em;
-      background-color: #333;
-      color: white;
-    }
-    body.light textarea {
-      background-color: #eee;
-      color: #111;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
       border-radius: 6px;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    body.light #feedbackContainer textarea {
+      background: white;
+      color: black;
+    }
+
+    #feedbackContainer button {
       background-color: #5865F2;
       color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    body.light button {
-      background-color: #0078d7;
+
+    #feedbackContainer button:hover {
+      background-color: #4752c4;
     }
-    #bisherigeFeedbacks {
-      margin-top: 20px;
-    }
-    .feedback-item {
-      background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .zurueck {
+
+    #zurueck {
       margin-top: 30px;
-      background-color: gray;
+      padding: 8px 20px;
+      border: none;
+      background: grey;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .feedbacksVorhanden {
+      font-style: italic;
+      font-size: 0.95em;
+      color: #ccc;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
   <h1>Rückmeldung geben</h1>
-  <div id="personenListe"></div>
+
+  <div id="mitgliederListe"></div>
 
   <div id="feedbackContainer">
-    <h3 id="feedbackAnzeige">Feedback an:</h3>
-    <div id="bisherigeFeedbacks"><em>Lade Feedbacks...</em></div>
-    <textarea id="feedbackText" placeholder="Dein Feedback..."></textarea>
+    <div id="feedbackLabel"></div>
+    <div id="vorherigeFeedbacks" class="feedbacksVorhanden">Lade frühere Rückmeldungen...</div>
+    <textarea id="feedbackText" placeholder="Dein Feedback hier eingeben..."></textarea>
     <button onclick="sendeFeedback()">Absenden</button>
   </div>
 
-  <button class="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
+  <button id="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("discordUser") || "{}");
-    const absenderName = user.global_name || user.username || "Unbekannt";
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
+    let ausgewähltePerson = null;
 
-    let ausgewaehlt = null;
+    async function ladeMitglieder() {
+      try {
+        const res = await fetch("https://food-feedback-bot.onrender.com/rolle/1340398700136104069");
+        const personen = await res.json();
+        const liste = document.getElementById("mitgliederListe");
+        liste.innerHTML = "";
 
-    const liste = document.getElementById("personenListe");
-    const container = document.getElementById("feedbackContainer");
-    const feedbackAnzeige = document.getElementById("feedbackAnzeige");
-
-    fetch("https://food-feedback-bot.onrender.com/api/rolle/1340398700136104069")
-      .then(r => r.json())
-      .then(personen => {
         personen.forEach(p => {
           const div = document.createElement("div");
-          div.className = "person";
-          div.innerHTML = `<img src="${p.avatar}" alt="pfp"><strong>${p.name}</strong>`;
-          div.onclick = () => {
-            document.querySelectorAll(".person").forEach(e => e.classList.remove("selected"));
-            div.classList.add("selected");
-            ausgewaehlt = p;
-            feedbackAnzeige.textContent = `Feedback an: ${p.name}`;
-            container.style.display = "block";
-            ladeFeedbacks(p.id);
-          };
+          div.className = "mitglied";
+          div.innerHTML = `<img src="${p.avatar}"><span>${p.name}</span>`;
+          div.onclick = () => toggleFeedback(p, div);
           liste.appendChild(div);
         });
-      });
+      } catch (err) {
+        document.getElementById("mitgliederListe").innerHTML = "<p>Fehler beim Laden der Mitglieder.</p>";
+      }
+    }
 
-    function ladeFeedbacks(id) {
-      const out = document.getElementById("bisherigeFeedbacks");
-      out.innerHTML = "Feedbacks werden geladen...";
-      fetch(`https://food-feedback-bot.onrender.com/api/feedbacks/${id}`)
-        .then(r => r.json())
-        .then(data => {
-          if (!data.length) {
-            out.innerHTML = "<em>Keine Feedbacks.</em>";
-          } else {
-            out.innerHTML = data.map(f => `<div class="feedback-item"><strong>${f.from}:</strong><br>${f.message}</div>`).join("");
-          }
-        })
-        .catch(() => {
-          out.innerHTML = "<em>Fehler beim Laden.</em>";
-        });
+    function toggleFeedback(person, element) {
+      const feld = document.getElementById("feedbackContainer");
+
+      // Deselect
+      if (ausgewähltePerson && ausgewähltePerson.id === person.id) {
+        feld.style.display = "none";
+        ausgewähltePerson = null;
+        element.classList.remove("selected");
+        return;
+      }
+
+      // Neue Auswahl
+      [...document.getElementsByClassName("mitglied")].forEach(el => el.classList.remove("selected"));
+      element.classList.add("selected");
+      ausgewähltePerson = person;
+      feld.style.display = "flex";
+
+      document.getElementById("feedbackLabel").innerText = `Feedback an: ${person.name}`;
+      document.getElementById("feedbackText").value = "";
+
+      ladeFruehereFeedbacks(person.id);
+    }
+
+    async function ladeFruehereFeedbacks(userid) {
+      // optional: hole echte Feedbacks aus deiner API
+      document.getElementById("vorherigeFeedbacks").innerText = "Keine bisherigen Rückmeldungen.";
     }
 
     function sendeFeedback() {
-      if (!ausgewaehlt) return alert("Bitte wähle eine Person aus.");
+      if (!ausgewähltePerson) return alert("Keine Person ausgewählt!");
       const text = document.getElementById("feedbackText").value.trim();
-      if (!text) return alert("Feedback darf nicht leer sein.");
+      if (!text) return alert("Bitte Feedback eingeben.");
 
-      fetch("https://food-feedback-bot.onrender.com/api/feedbacks", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          to: ausgewaehlt.id,
-          from: absenderName,
-          message: text
-        })
-      });
+      const sender = JSON.parse(localStorage.getItem("discordUser"));
+      const senderName = sender ? `${sender.global_name || sender.username}` : "Unbekannt";
 
-      fetch("https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa", {
+      const msg = {
+        content:
+          `📬 **Feedback eingegangen**\n` +
+          `👤 Von: **${senderName}**\n` +
+          `🎯 An: **${ausgewähltePerson.name}**\n` +
+          `💬 ${text}`
+      };
+
+      fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          content: `📬 **Feedback eingegangen**\n👤 Von: **${absenderName}**\n🎯 An: **${ausgewaehlt.name}**\n💬 ${text}`
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(msg)
       }).then(res => {
         if (res.ok) {
-          alert("Feedback gesendet!");
+          alert("Feedback wurde gesendet!");
           document.getElementById("feedbackText").value = "";
-          ladeFeedbacks(ausgewaehlt.id);
         } else {
           alert("Fehler beim Senden.");
         }
-      }).catch(() => {
-        alert("Netzwerkfehler.");
-      });
+      }).catch(() => alert("Verbindungsfehler beim Senden."));
     }
 
-    if (localStorage.getItem("theme") === "light") {
-      document.body.classList.add("light");
-    }
+    // Theme Sync
+    const theme = localStorage.getItem("theme");
+    if (theme === "light") document.body.classList.add("light");
+
+    ladeMitglieder();
   </script>
 </body>
 </html>

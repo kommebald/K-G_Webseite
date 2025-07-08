@@ -2,28 +2,34 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Rückmeldung geben</title>
+  <title>Rückmeldung (Mobil)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       background-color: #1e1e2f;
       color: white;
-      padding: 20px;
+      margin: 0;
+      padding: 10px;
     }
 
     h1 {
-      text-align: right;
+      text-align: center;
+      font-size: 1.5em;
+      margin-top: 10px;
     }
 
     .person {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       background-color: #2e2e3f;
+      border-radius: 6px;
       padding: 10px;
-      border-radius: 8px;
       margin: 10px 0;
+    }
+
+    .person-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .person-info {
@@ -33,31 +39,51 @@
     }
 
     .person img {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
     }
 
     button {
       background-color: #5865F2;
-      border: none;
       color: white;
+      border: none;
       padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
+      border-radius: 4px;
     }
 
     button:hover {
       background-color: #4752c4;
     }
 
+    .feedback-box {
+      margin-top: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .feedback-box textarea {
+      width: 100%;
+      min-height: 60px;
+      border-radius: 5px;
+      border: none;
+      padding: 6px;
+      resize: vertical;
+      background-color: #1e1e2f;
+      color: white;
+      border: 1px solid #555;
+    }
+
     #fehler {
-      color: #ff7777;
+      color: #ff7b7b;
+      text-align: center;
       margin-bottom: 10px;
     }
 
     #back {
-      margin-top: 20px;
+      display: block;
+      margin: 20px auto;
       background-color: #444;
     }
   </style>
@@ -68,7 +94,7 @@
   <div id="fehler"></div>
   <div id="liste"></div>
 
-  <button id="back" onclick="window.location.href='webseite.html'">Zurück</button>
+  <button id="back" onclick="window.location.href='webseite_mobile.html'">Zurück</button>
 
   <script>
     const API_URL = "https://c80b35ce-76f1-480e-8b66-6e869839bf54-00-2r2lfkkv36n4m.picard.replit.dev";
@@ -88,12 +114,19 @@
         data.forEach(person => {
           const div = document.createElement("div");
           div.className = "person";
+
           div.innerHTML = `
-            <div class="person-info">
-              <img src="${person.avatar}" alt="Profilbild">
-              <span>${person.name}</span>
+            <div class="person-header">
+              <div class="person-info">
+                <img src="${person.avatar}" alt="Profilbild">
+                <span>${person.name}</span>
+              </div>
+              <button onclick="zeigeFeedback(this)">Feedback</button>
             </div>
-            <button onclick="feedback('${person.name}')">Feedback</button>
+            <div class="feedback-box">
+              <textarea placeholder="Schreibe deine Rückmeldung zu ${person.name}..."></textarea>
+              <button onclick="sendeFeedback(this)">Absenden</button>
+            </div>
           `;
           container.appendChild(div);
         });
@@ -103,12 +136,25 @@
         document.getElementById("fehler").textContent = "Fehler beim Laden der Mitglieder.";
       });
 
-    function feedback(name) {
-      const text = prompt(`Was möchtest du zu ${name} sagen?`);
-      if (text) {
-        alert("Danke für dein Feedback! (Speichern folgt später)");
-        // Optional: hier kannst du das Feedback an dein Backend senden
+    function zeigeFeedback(btn) {
+      const feedbackBox = btn.closest(".person").querySelector(".feedback-box");
+      feedbackBox.style.display = feedbackBox.style.display === "flex" ? "none" : "flex";
+    }
+
+    function sendeFeedback(btn) {
+      const textarea = btn.previousElementSibling;
+      const text = textarea.value.trim();
+      if (text.length < 3) {
+        alert("Bitte gib mehr als 3 Zeichen Feedback.");
+        return;
       }
+
+      btn.disabled = true;
+      textarea.disabled = true;
+      btn.textContent = "Gesendet ✔️";
+
+      // Optional: Sende das Feedback an dein Backend
+      // fetch('/api/feedback', { method: 'POST', body: JSON.stringify({ name, text }) })
     }
   </script>
 </body>

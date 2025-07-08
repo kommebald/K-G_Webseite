@@ -2,15 +2,14 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rückmeldung Mobile</title>
+  <title>Rückmeldung</title>
   <style>
     body {
       background-color: #1e1e2f;
       color: white;
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 1rem;
+      padding: 2rem;
       transition: background-color 0.3s, color 0.3s;
     }
     body.light {
@@ -19,7 +18,7 @@
     }
     .mitglied {
       background-color: #2e2e3f;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       padding: 1rem;
       border-radius: 8px;
     }
@@ -30,24 +29,24 @@
     .mitglied-header {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
       cursor: pointer;
     }
     .mitglied-header img {
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
     }
     .feedback-container {
-      margin-top: 0.5rem;
+      margin-top: 1rem;
     }
     .feedback-list {
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
     }
     textarea {
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.6rem;
       border-radius: 4px;
       border: none;
       resize: vertical;
@@ -77,13 +76,13 @@
   </style>
 </head>
 <body>
-<h2>Rückmeldung</h2>
+<h1>Rückmeldung</h1>
 <div id="liste"></div>
-<button class="zurueck" onclick="window.location.href='Webseite.html'">€Zurück</button>
+<button class="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
 <script>
 const webhookUrl = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
-const apiUrl = "https://food-feedback-bot.onrender.com/rolle/1340398700136104069";
+const apiUrl = "https://food-feedback-bot.onrender.com";
 const discordUser = JSON.parse(localStorage.getItem("discordUser"));
 
 function ladeFeedback(id) {
@@ -99,7 +98,7 @@ function speichereFeedback(id, eintrag) {
 }
 
 async function ladeMitglieder() {
-  const res = await fetch(apiUrl);
+  const res = await fetch(`${apiUrl}/rolle/1340398700136104069`);
   const daten = await res.json();
   const container = document.getElementById("liste");
   daten.forEach(user => {
@@ -107,8 +106,8 @@ async function ladeMitglieder() {
     el.className = "mitglied";
     el.innerHTML = `
       <div class="mitglied-header">
-        <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png">
-        <strong>${user.display_name || user.username} (${user.username})</strong>
+        <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+        <strong>${user.name}</strong>
       </div>
     `;
     el.querySelector(".mitglied-header").onclick = () => {
@@ -138,7 +137,7 @@ async function ladeMitglieder() {
         fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: `**Feedback für ${user.display_name || user.username}:**\n> ${msg}` })
+          body: JSON.stringify({ content: `**Feedback für ${user.name}:**\n> ${msg}` })
         });
       };
 

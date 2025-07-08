@@ -93,10 +93,26 @@
       align-items: center;
       gap: 10px;
     }
+    body.light #profil {
+      background: rgba(255,255,255,0.85);
+      color: #111;
+    }
     #profil img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
+    }
+    #logout {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #cc3333;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -123,8 +139,10 @@
 
   <div id="profil">
     <img id="avatar" src="" alt="Profilbild">
-    <div id="username">Benutzer</div>
+    <div id="username">Lädt...</div>
   </div>
+
+  <button id="logout" onclick="logout()">Abmelden</button>
 
   <script>
     function updateClock() {
@@ -134,6 +152,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // Theme
     const theme = localStorage.getItem("theme");
     if (theme === "light") {
       document.body.classList.add("light");
@@ -147,10 +166,21 @@
       document.getElementById("theme-toggle").textContent = light ? "Dunkler Modus" : "Weißer Modus";
     });
 
-    const storedUser = JSON.parse(localStorage.getItem("discordUser"));
-    if (storedUser) {
-      document.getElementById("username").textContent = storedUser.username;
-      document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`;
+    // Nutzer anzeigen
+    const name = localStorage.getItem("discordName");
+    const id = localStorage.getItem("discordID");
+    const avatar = localStorage.getItem("discordAvatar");
+
+    if (!name || !id || !avatar) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("username").textContent = name;
+      document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${id}/${avatar}.png`;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
     }
   </script>
 </body>

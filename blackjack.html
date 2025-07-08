@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Blackjack mit Sound & Chips</title>
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.light {
+      background-color: #f5f5f5;
+      color: #111;
+    }
+
+    h1 {
+      font-size: 32px;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+
+    .card {
+      background: white;
+      color: black;
+      padding: 10px;
+      border-radius: 6px;
+      width: 50px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: fadeIn 0.4s forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    body:not(.light) .card {
+      background: #ddd;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #5865F2;
+      color: white;
+      cursor: pointer;
+    }
+
+    .zurueck {
+      margin-top: 30px;
+      background-color: gray;
+    }
+
+    #message {
+      font-size: 18px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .sound-toggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background-color: #444;
+    }
+
+    .chip-info {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="sound-toggle" onclick="toggleSound()">🔊</button>
+
+  <h1>🃏 Blackjack</h1>
+
+  <div class="chip-info">
+    💰 Chips: <span id="chips">100</span> |
+    Einsatz: <input type="number" id="bet" value="10" min="1" style="width: 60px;">
+  </div>
+
+  <h2>Deine Karten (<span id="player-total">0</span>)</h2>
+  <div class="cards" id="player-cards"></div>
+
+  <h2>Gegner Karten (<span id="dealer-total">?</span>)</h2>
+  <div class="cards" id="dealer-cards"></div>
+
+  <div id="message"></div>
+
+  <div>
+    <button onclick="hit()">Karte ziehen</button>
+    <button onclick="stand()">Passen</button>
+    <button onclick="restart()">Neu starten</button>
+  </div>
+
+  <button class="zurueck" onclick="window.location.href='Webseite.html'">Zurück</button>
+
+  <!-- Soundeffekte -->
+  <audio id="cardSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_1b52ddf7d3.mp3"></audio>
+  <audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_09c82c309f.mp3"></audio>
+  <audio id="loseSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_05759be6a3.mp3"></audio>
+
+  <script>
+    const suits = ["♠", "♥", "♦", "♣"];
+    const values = [
+      { name: "A", value: 11 }, { name: "2", value: 2 }, { name: "3", value: 3 },
+      { name: "4", value: 4 }, { name: "5", value: 5 }, { name: "6", value: 6 },
+      { name: "7", value: 7 }, { name: "8", value: 8 }, { name: "9", value: 9 },
+      { name: "10", value: 10 }, { name: "J", value: 10 }, { name: "Q", value: 10 }, { name: "K", value: 10 }
+    ];
+
+    let deck = [], player = [], dealer = [], used = [], finished = false;
+    let chips = 100, soundOn = true;
+
+    const cardSound = document.getElementById("cardSound");
+    const winSound = document.getElementById("winSound");
+    const loseSound = document.getElementById("loseSound");
+
+    function buildDeck() {
+      deck = [];
+      for (let suit of suits) {
+        for (let v of values) {
+          deck.push({ text: v.name + suit, value: v.value });
+        }
+      }
+    }
+
+    function drawCard() {
+      let card;
+      do {
+        card = deck[Math.floor(Math.random() * deck.length)];
+      } while (used.includes(card));
+      used.push(card);
+      if (soundOn) cardSound.play();
+      return card;
+    }
+
+    function calculateTotal(hand) {
+      let total = hand.reduce((sum, c) => sum + c.value, 0);
+      let aces = hand.filter(c => c.text.startsWith("A")).length;
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces--;
+      }
+      return total;
+    }
+
+    function updateUI() {
+      document.getElementById("chips").textContent = chips;
+      document.getElementById("player-total").textContent = calculateTotal(player);
+      document.getElementById("dealer-total").textContent = finished ? calculateTotal(dealer) : "?";
+
+      const pc = document.getElementById("player-cards");
+      const dc = document.getElementById("dealer-cards");
+      pc.innerHTML = "";
+      dc.innerHTML = "";
+
+      player.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.textContent = c.text;
+        pc.appendChild(div);
+      });
+
+      dealer.forEach((c, i) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.textContent = (i === 0 || finished) ? c.text : "🂠";
+        dc.appendChild(div);
+      });
+    }
+
+    function hit() {
+      if (finished) return;
+      player.push(drawCard());
+      updateUI();
+      if (calculateTotal(player) > 21) {
+        lose();
+      }
+    }
+
+    function stand() {
+      if (finished) return;
+      while (calculateTotal(dealer) < 17) {
+        dealer.push(drawCard());
+      }
+
+      const p = calculateTotal(player);
+      const d = calculateTotal(dealer);
+
+      if (d > 21 || p > d) {
+        win();
+      } else if (p === d) {
+        endGame("⚖️ Unentschieden.");
+      } else {
+        lose();
+      }
+    }
+
+    function win() {
+      const bet = getBet();
+      chips += bet;
+      if (soundOn) winSound.play();
+      endGame("🏆 Du hast gewonnen!");
+    }
+
+    function lose() {
+      const bet = getBet();
+      chips -= bet;
+      if (soundOn) loseSound.play();
+      endGame("😞 Du hast verloren.");
+    }
+
+    function endGame(msg) {
+      finished = true;
+      document.getElementById("message").textContent = msg;
+      updateUI();
+    }
+
+    function restart() {
+      used = [];
+      finished = false;
+      player = [drawCard(), drawCard()];
+      dealer = [drawCard(), drawCard()];
+      document.getElementById("message").textContent = "";
+      updateUI();
+    }
+
+    function getBet() {
+      return Math.max(1, parseInt(document.getElementById("bet").value)) || 10;
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      document.querySelector(".sound-toggle").textContent = soundOn ? "🔊" : "🔇";
+    }
+
+    // Theme übernehmen
+    const theme = localStorage.getItem("theme");
+    if (theme === "light") {
+      document.body.classList.add("light");
+    }
+
+    buildDeck();
+    restart();
+  </script>
+</body>
+</html>

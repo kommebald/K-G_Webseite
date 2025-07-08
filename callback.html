@@ -21,10 +21,13 @@
       })
       .then(res => res.json())
       .then(user => {
-        // Nur den reinen Benutzernamen speichern
-        const username = user.username;
+        // Speichere alle relevanten Daten
+        localStorage.setItem("discordID", user.id);
+        localStorage.setItem("discordUsername", user.username);
+        localStorage.setItem("discordAvatar", user.avatar);
+        localStorage.setItem("discordName", user.global_name || user.username);
 
-        localStorage.setItem("discordName", username);
+        // Weiterleitung zur Startseite
         window.location.href = "Webseite.html";
       })
       .catch(() => {

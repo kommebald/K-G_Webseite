@@ -33,9 +33,9 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 20px;
-      max-width: 500px;
-      margin-bottom: 20px;
+      max-width: 600px;
       width: 90%;
+      margin-bottom: 20px;
     }
     .tile {
       background-color: var(--tile);
@@ -116,7 +116,7 @@
       <div class="tile-icon">📝</div>
       <div class="tile-title">Rückmeldung</div>
     </div>
-    <!-- Admin Panel Tile (wird per JS hinzugefügt) -->
+    <!-- Admin tile wird per JS hinzugefügt -->
   </div>
 
   <div class="footer">Made by kommebald</div>
@@ -135,6 +135,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // Theme handling
     const theme = localStorage.getItem("theme");
     if (theme === "light") {
       document.body.classList.add("light");
@@ -148,23 +149,23 @@
       document.getElementById("theme-toggle").textContent = light ? "Dunkler Modus" : "Weißer Modus";
     });
 
+    // Profil laden
     const storedUser = JSON.parse(localStorage.getItem("discordUser"));
     if (storedUser) {
-      document.getElementById("username").textContent = `${storedUser.global_name || storedUser.username} (${storedUser.username})`;
+      document.getElementById("username").textContent = `${storedUser.global_name || storedUser.username}`;
       document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`;
 
-      const adminIDs = [
+      const adminIds = [
         "1063895939724624023",
         "1196556299597521027",
         "1072146615252566158"
       ];
-
-      if (adminIDs.includes(storedUser.id)) {
+      if (adminIds.includes(storedUser.id)) {
         const adminTile = document.createElement("div");
         adminTile.className = "tile";
-        adminTile.onclick = () => location.href = 'admin.html';
+        adminTile.onclick = () => location.href = "admin.html";
         adminTile.innerHTML = `
-          <div class="tile-icon">🛠️</div>
+          <div class="tile-icon">🔒</div>
           <div class="tile-title">Admin Panel</div>
         `;
         document.getElementById("tile-container").appendChild(adminTile);

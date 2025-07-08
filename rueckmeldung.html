@@ -1,200 +1,160 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Rückmeldung geben</title>
+  <meta charset="UTF-8" />
+  <title>Rückmeldung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      margin: 0;
-      padding: 20px;
       font-family: Arial, sans-serif;
       background-color: #1e1e2f;
       color: white;
-      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      padding: 20px;
     }
-
     body.light {
       background-color: #f5f5f5;
       color: #111;
     }
-
     h1 {
       text-align: center;
-      margin-bottom: 30px;
     }
-
-    .person-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    .person {
+    .mitglied {
       display: flex;
       align-items: center;
-      background-color: #2e2e3f;
-      padding: 12px;
+      gap: 10px;
+      padding: 10px;
+      background: #2e2e3f;
       border-radius: 8px;
+      margin: 5px 0;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background 0.3s;
     }
-
-    .person.selected {
-      border: 2px solid #5865F2;
-      background-color: #3e3e5f;
+    .mitglied:hover {
+      background: #3a3a5a;
     }
-
-    body.light .person {
-      background-color: #fff;
-      color: black;
+    .mitglied.selected {
+      background: #5865F2;
     }
-
-    .person img {
-      width: 48px;
-      height: 48px;
+    .mitglied img {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      margin-right: 15px;
     }
-
-    .feedback-section {
-      max-width: 600px;
-      margin: 40px auto 20px;
+    #feedback-container {
+      margin-top: 20px;
       display: none;
-      flex-direction: column;
     }
-
     textarea {
       width: 100%;
       height: 100px;
-      padding: 10px;
-      resize: vertical;
-      border-radius: 6px;
-      background-color: #333;
-      color: white;
-      border: 1px solid #555;
-      margin-top: 10px;
-    }
-
-    body.light textarea {
-      background-color: #f9f9f9;
-      color: #000;
-    }
-
-    button {
-      background-color: #5865F2;
+      background: #333;
       color: white;
       border: none;
+      border-radius: 5px;
+      padding: 10px;
+      resize: none;
+    }
+    body.light textarea {
+      background: #fff;
+      color: #000;
+    }
+    button {
+      margin-top: 10px;
       padding: 10px 20px;
-      margin-top: 15px;
-      border-radius: 6px;
+      border: none;
+      background-color: #5865F2;
+      color: white;
+      border-radius: 5px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #4752c4;
-    }
-
     .zurueck {
-      display: block;
-      margin: 30px auto 0;
-      background-color: #444;
-    }
-
-    .feedback-log {
-      font-style: italic;
-      font-size: 0.9em;
-      color: #aaa;
-      margin-top: 6px;
+      margin-top: 20px;
+      background-color: gray;
     }
   </style>
 </head>
 <body>
   <h1>Rückmeldung geben</h1>
 
-  <div class="person-list" id="personen"></div>
+  <div id="liste"></div>
 
-  <div class="feedback-section" id="feedbackContainer">
-    <div id="selectedName" style="font-weight: bold; margin-bottom: 10px;"></div>
-    <textarea id="feedbackText" placeholder="Dein Feedback hier eingeben..."></textarea>
-    <button onclick="absenden()">Absenden</button>
+  <div id="feedback-container">
+    <h3 id="ziel">Feedback an: ...</h3>
+    <textarea id="feedback-text" placeholder="Dein Feedback hier eingeben..."></textarea>
+    <button onclick="sendeFeedback()">Absenden</button>
   </div>
 
   <button class="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
   <script>
-    const apiURL = "https://food-feedback-bot.onrender.com";
-    let ausgewaehltePerson = null;
+    const webhookURL = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
+    const memberList = [
+      {"id":"1063895939724624023","name":"50 | GF | Juli (motorrad_fan)","avatar":"https://cdn.discordapp.com/avatars/1063895939724624023/ab7f8572bcc17767bd75f94e941ae577.png"},
+      {"id":"1196556299597521027","name":"49 | GF | Lami (kommebald)","avatar":"https://cdn.discordapp.com/avatars/1196556299597521027/92c1869a0706b9015ae585972724aba8.png"},
+      {"id":"1072146615252566158","name":"50 | GF | Tobi (tobi_0o)","avatar":"https://cdn.discordapp.com/avatars/1072146615252566158/259d7d9477af2d03bad695d3444c275a.png"}
+      // Du kannst die Liste hier erweitern...
+    ];
 
-    async function ladePersonen() {
-      try {
-        const res = await fetch(apiURL + "/rolle/1340398700136104069");
-        const personen = await res.json();
-        const container = document.getElementById("personen");
-        container.innerHTML = "";
+    const liste = document.getElementById("liste");
+    const feedbackContainer = document.getElementById("feedback-container");
+    const feedbackText = document.getElementById("feedback-text");
+    const ziel = document.getElementById("ziel");
 
-        personen.forEach(p => {
-          const div = document.createElement("div");
-          div.className = "person";
-          div.innerHTML = `
-            <img src="${p.avatar}" alt="${p.name}">
-            <div>${p.name}</div>
-          `;
-          div.onclick = () => personAuswaehlen(p, div);
-          container.appendChild(div);
-        });
-      } catch (e) {
-        document.getElementById("personen").innerHTML = "Fehler beim Laden der Mitglieder.";
-      }
-    }
+    let ausgewaehlt = null;
 
-    function personAuswaehlen(person, element) {
-      document.querySelectorAll(".person").forEach(el => el.classList.remove("selected"));
-
-      if (ausgewaehltePerson && ausgewaehltePerson.id === person.id) {
-        // Nochmal geklickt → Deselektieren
-        ausgewaehltePerson = null;
-        document.getElementById("feedbackContainer").style.display = "none";
-      } else {
-        element.classList.add("selected");
-        ausgewaehltePerson = person;
-        document.getElementById("selectedName").textContent = `Feedback an: ${person.name}`;
-        document.getElementById("feedbackContainer").style.display = "flex";
-      }
-    }
-
-    function absenden() {
-      const text = document.getElementById("feedbackText").value.trim();
-      if (!ausgewaehltePerson || !text) {
-        alert("Bitte eine Person auswählen und Feedback eingeben.");
-        return;
-      }
-
-      const sender = JSON.parse(localStorage.getItem("discordUser")) || { username: "Unbekannt" };
-
-      fetch(apiURL + "/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          zielId: ausgewaehltePerson.id,
-          text: text,
-          von: sender.username
-        })
-      }).then(res => {
-        if (res.ok) {
-          alert("Feedback gesendet!");
-          document.getElementById("feedbackText").value = "";
-        } else {
-          alert("Fehler beim Senden.");
-        }
+    function renderMitglieder() {
+      liste.innerHTML = "";
+      memberList.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "mitglied";
+        div.innerHTML = `<img src="${m.avatar}"><strong>${m.name}</strong>`;
+        div.onclick = () => {
+          document.querySelectorAll(".mitglied").forEach(el => el.classList.remove("selected"));
+          div.classList.add("selected");
+          ausgewaehlt = m;
+          ziel.textContent = `Feedback an: ${m.name}`;
+          feedbackContainer.style.display = "block";
+        };
+        liste.appendChild(div);
       });
     }
 
-    const theme = localStorage.getItem("theme");
-    if (theme === "light") document.body.classList.add("light");
+    function sendeFeedback() {
+      if (!ausgewaehlt) return alert("Bitte wähle jemanden aus.");
+      const text = feedbackText.value.trim();
+      if (!text) return alert("Bitte gib ein Feedback ein.");
 
-    ladePersonen();
+      const user = JSON.parse(localStorage.getItem("discordUser")) || {};
+      const sender = user.username || "Unbekannt";
+
+      const nachricht = {
+        content: `📝 **Feedback gesendet:**\n> An **${ausgewaehlt.name}**\n> Von **${sender}**\n\n${text}`
+      };
+
+      fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nachricht)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("Feedback wurde gesendet!");
+          feedbackText.value = "";
+        } else {
+          alert("Fehler beim Senden.");
+        }
+      })
+      .catch(() => alert("Netzwerkfehler beim Senden."));
+    }
+
+    // Dark Mode übernehmen
+    const theme = localStorage.getItem("theme");
+    if (theme === "light") {
+      document.body.classList.add("light");
+    }
+
+    renderMitglieder();
   </script>
 </body>
 </html>

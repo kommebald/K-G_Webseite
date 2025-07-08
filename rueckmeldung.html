@@ -12,38 +12,46 @@
       padding: 2rem;
       transition: background-color 0.3s, color 0.3s;
     }
+
     body.light {
       background-color: #f5f5f5;
       color: #111;
     }
+
     .mitglied {
       background-color: #2e2e3f;
       margin-bottom: 1.5rem;
       padding: 1rem;
       border-radius: 8px;
     }
+
     body.light .mitglied {
       background-color: #fff;
       color: #000;
     }
+
     .mitglied-header {
       display: flex;
       align-items: center;
       gap: 1rem;
       cursor: pointer;
     }
+
     .mitglied-header img {
       border-radius: 50%;
       width: 50px;
       height: 50px;
     }
+
     .feedback-container {
       margin-top: 1rem;
     }
+
     .feedback-list {
       font-size: 0.95rem;
       margin-bottom: 0.75rem;
     }
+
     textarea {
       width: 100%;
       padding: 0.6rem;
@@ -53,10 +61,12 @@
       background: #333;
       color: white;
     }
+
     body.light textarea {
       background: #eee;
       color: black;
     }
+
     button.senden {
       background: #5865F2;
       color: white;
@@ -65,6 +75,7 @@
       border-radius: 4px;
       margin-top: 0.5rem;
     }
+
     .zurueck {
       margin-top: 2rem;
       background: #444;
@@ -81,77 +92,92 @@
 <button class="zurueck" onclick="window.location.href='webseite.html'">Zurück</button>
 
 <script>
-const webhookUrl = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
-const apiUrl = "https://food-feedback-bot.onrender.com";
-const discordUser = JSON.parse(localStorage.getItem("discordUser"));
+  const webhookUrl = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
+  const apiUrl = "https://food-feedback-bot.onrender.com";
+  const discordUser = JSON.parse(localStorage.getItem("discordUser"));
 
-function ladeFeedback(id) {
-  const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
-  return all[id] || [];
-}
+  function ladeFeedback(id) {
+    const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
+    return all[id] || [];
+  }
 
-function speichereFeedback(id, eintrag) {
-  const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
-  if (!all[id]) all[id] = [];
-  all[id].push(eintrag);
-  localStorage.setItem("feedbacks", JSON.stringify(all));
-}
+  function speichereFeedback(id, eintrag) {
+    const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
+    if (!all[id]) all[id] = [];
+    all[id].push(eintrag);
+    localStorage.setItem("feedbacks", JSON.stringify(all));
+  }
 
-async function ladeMitglieder() {
-  const res = await fetch(`${apiUrl}/rolle/1340398700136104069`);
-  const daten = await res.json();
-  const container = document.getElementById("liste");
-  daten.forEach(user => {
-    const el = document.createElement("div");
-    el.className = "mitglied";
-    el.innerHTML = `
-      <div class="mitglied-header">
-        <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-        <strong>${user.name}</strong>
-      </div>
-    `;
-    el.querySelector(".mitglied-header").onclick = () => {
-      if (el.querySelector(".feedback-container")) return;
-      const feedbackDiv = document.createElement("div");
-      feedbackDiv.className = "feedback-container";
+  async function ladeMitglieder() {
+    const res = await fetch(`${apiUrl}/rolle/1340398700136104069`);
+    const daten = await res.json();
+    const container = document.getElementById("liste");
 
-      const list = ladeFeedback(user.id);
-      const listDiv = document.createElement("div");
-      listDiv.className = "feedback-list";
-      listDiv.innerHTML = list.length ? list.map(f => `• ${f}`).join("<br>") : "<em>Keine Feedbacks.</em>";
+    daten.forEach(user => {
+      const el = document.createElement("div");
+      el.className = "mitglied";
+      el.innerHTML = `
+        <div class="mitglied-header">
+          <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+          <strong>${user.name}</strong>
+        </div>
+      `;
 
-      const textarea = document.createElement("textarea");
-      textarea.placeholder = "Feedback schreiben...";
+      el.querySelector(".mitglied-header").onclick = () => {
+        const existing = el.querySelector(".feedback-container");
+        if (existing) {
+          existing.remove();
+          return;
+        }
 
-      const btn = document.createElement("button");
-      btn.className = "senden";
-      btn.textContent = "Absenden";
-      btn.onclick = () => {
-        const val = textarea.value.trim();
-        if (!val) return;
-        const msg = `${discordUser.username}: ${val}`;
-        speichereFeedback(user.id, msg);
-        listDiv.innerHTML += `<br>• ${msg}`;
-        textarea.value = "";
+        const feedbackDiv = document.createElement("div");
+        feedbackDiv.className = "feedback-container";
 
-        fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: `**Feedback für ${user.name}:**\n> ${msg}` })
-        });
+        const list = ladeFeedback(user.id);
+        const listDiv = document.createElement("div");
+        listDiv.className = "feedback-list";
+        listDiv.innerHTML = list.length
+          ? list.map(f => `• ${f}`).join("<br>")
+          : "<em>Keine Feedbacks.</em>";
+
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = "Feedback schreiben...";
+
+        const btn = document.createElement("button");
+        btn.className = "senden";
+        btn.textContent = "Absenden";
+        btn.onclick = () => {
+          const val = textarea.value.trim();
+          if (!val) return;
+          const msg = `${discordUser.username}: ${val}`;
+          speichereFeedback(user.id, msg);
+          listDiv.innerHTML += `<br>• ${msg}`;
+          textarea.value = "";
+
+          fetch(webhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              content: `**Feedback für ${user.name}:**\n> ${msg}`
+            })
+          });
+        };
+
+        feedbackDiv.appendChild(listDiv);
+        feedbackDiv.appendChild(textarea);
+        feedbackDiv.appendChild(btn);
+        el.appendChild(feedbackDiv);
       };
 
-      feedbackDiv.appendChild(listDiv);
-      feedbackDiv.appendChild(textarea);
-      feedbackDiv.appendChild(btn);
-      el.appendChild(feedbackDiv);
-    };
-    container.appendChild(el);
-  });
-}
+      container.appendChild(el);
+    });
+  }
 
-if (localStorage.getItem("theme") === "light") document.body.classList.add("light");
-ladeMitglieder();
+  if (localStorage.getItem("theme") === "light") {
+    document.body.classList.add("light");
+  }
+
+  ladeMitglieder();
 </script>
 </body>
 </html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    #auth-section, #panel-section {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+      background: #333;
+      color: white;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      background: #5865F2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .output {
+      background: #2a2a3f;
+      padding: 10px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin-Zugang</h1>
+
+  <div id="auth-section">
+    <p>Bitte Admin-Passwort eingeben:</p>
+    <input type="password" id="adminPass" placeholder="Passwort">
+    <button onclick="checkPassword()">Bestätigen</button>
+  </div>
+
+  <div id="panel-section" class="hidden">
+    <h2>Admin Panel</h2>
+    <button onclick="zeigeFeedbacks()">Feedbacks anzeigen</button>
+    <button onclick="zeigeBestellungen()">Bestellungen anzeigen</button>
+    <button onclick="loescheFeedbacks()">Alle Feedbacks löschen</button>
+    <div class="output" id="output"></div>
+  </div>
+
+  <script>
+    const adminIds = [
+      "1063895939724624023",
+      "1196556299597521027",
+      "1072146615252566158"
+    ];
+
+    const password = "Köstlich und Gut auf die Eins JTL";
+    const user = JSON.parse(localStorage.getItem("discordUser"));
+
+    if (!user || !adminIds.includes(user.id)) {
+      document.body.innerHTML = "<h2>Zugriff verweigert</h2><p>Du hast keinen Zugriff auf dieses Panel.</p>";
+    }
+
+    function checkPassword() {
+      const input = document.getElementById("adminPass").value;
+      if (input === password) {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("panel-section").classList.remove("hidden");
+      } else {
+        alert("Falsches Passwort");
+      }
+    }
+
+    function zeigeFeedbacks() {
+      let result = "";
+      for (let key in localStorage) {
+        if (key.startsWith("feedbacks-")) {
+          const arr = JSON.parse(localStorage.getItem(key));
+          result += `${key}:\n${arr.map(f => "- " + f).join("\n")}\n\n`;
+        }
+      }
+      document.getElementById("output").textContent = result || "Keine Feedbacks gefunden.";
+    }
+
+    function zeigeBestellungen() {
+      // Simulation: ersetze das mit echter Backend-API wenn nötig
+      const daten = localStorage.getItem("bestellungen") || "Keine Bestellungen gespeichert.";
+      document.getElementById("output").textContent = daten;
+    }
+
+    function loescheFeedbacks() {
+      for (let key in localStorage) {
+        if (key.startsWith("feedbacks-")) {
+          localStorage.removeItem(key);
+        }
+      }
+      alert("Alle Feedbacks wurden gelöscht.");
+      document.getElementById("output").textContent = "Alle Feedbacks wurden gelöscht.";
+    }
+  </script>
+</body>
+</html>

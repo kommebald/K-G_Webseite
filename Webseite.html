@@ -26,8 +26,8 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      margin: 0;
       transition: background-color 0.3s, color 0.3s;
+      margin: 0;
     }
     .desktop {
       display: grid;
@@ -97,6 +97,7 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -116,8 +117,8 @@
       <div class="tile-icon">📝</div>
       <div class="tile-title">Rückmeldung</div>
     </div>
-    <div class="tile" onclick="oeffneAdminPanel()">
-      <div class="tile-icon">🛠️</div>
+    <div class="tile" onclick="location.href='admin_panel.html'">
+      <div class="tile-icon">🔐</div>
       <div class="tile-title">Admin Panel</div>
     </div>
   </div>
@@ -126,12 +127,11 @@
   <div id="clock">Uhrzeit wird geladen...</div>
 
   <div id="profil">
-    <img id="avatar" src="" alt="Profilbild">
+    <img id="avatar" src="" alt="Profil">
     <div id="username">Benutzer</div>
   </div>
 
   <script>
-    // Uhrzeit aktualisieren
     function updateClock() {
       const now = new Date().toLocaleTimeString("de-DE", { timeZone: "Europe/Berlin" });
       document.getElementById("clock").textContent = now;
@@ -139,7 +139,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Theme laden
     const theme = localStorage.getItem("theme");
     if (theme === "light") {
       document.body.classList.add("light");
@@ -154,21 +153,16 @@
     });
 
     // Profil anzeigen
-    const storedUser = JSON.parse(localStorage.getItem("discordUser"));
-    if (storedUser) {
-      document.getElementById("username").textContent = `${storedUser.global_name || storedUser.username}`;
-      document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`;
-    }
-
-    // Admin-Panel Passwortprüfung
-    function oeffneAdminPanel() {
-      const pw = prompt("Admin-Passwort eingeben:");
-      if (pw === "Köstlich und Gut auf die Eins JTL") {
-        window.location.href = "admin.html";
+    const storedUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
+    if (storedUser && storedUser.username) {
+      document.getElementById("username").textContent = storedUser.global_name || storedUser.username;
+      if (storedUser.id && storedUser.avatar) {
+        document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`;
       } else {
-        alert("Falsches Passwort!");
-        location.href = "webseite.html";
+        document.getElementById("avatar").src = "https://cdn-icons-png.flaticon.com/512/25/25694.png";
       }
+    } else {
+      document.getElementById("username").textContent = "Unbekannt";
     }
   </script>
 </body>

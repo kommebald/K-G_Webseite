@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rückmeldung</title>
   <style>
     body {
@@ -79,14 +79,14 @@
 <div id="liste">Lade Mitglieder...</div>
 <div id="feedback-bereich" style="display:none">
   <h2 id="ziel-nutzer"></h2>
-  <textarea id="feedback" placeholder="Dein Feedback..."></textarea><br>
+  <textarea id="feedback" placeholder="Dein Feedback..."></textarea>
+  <br>
   <button onclick="sendeFeedback()">Abschicken</button>
 </div>
-
 <script>
-const API_BASE = "https://DEIN-REPLIT-NAME.repl.co";  // ✅ HIER ändern!
-const roleId = "1340398700136104069";
 const webhook = "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL";
+const roleId = "1340398700136104069";
+const serverBaseUrl = "https://kommebald.replit.app"; // 👈 Replit-URL
 let zielID = "";
 
 function ladeFeedbacks() {
@@ -95,8 +95,7 @@ function ladeFeedbacks() {
 
 function zeigeMitglieder(mitglieder) {
   const feedbacks = ladeFeedbacks();
-  const liste = document.getElementById("liste");
-  liste.innerHTML = "";
+  document.getElementById("liste").innerHTML = "";
   mitglieder.forEach(m => {
     const div = document.createElement("div");
     div.className = "mitglied";
@@ -122,13 +121,13 @@ function zeigeMitglieder(mitglieder) {
 
     div.appendChild(name);
     div.appendChild(feedbackDiv);
-    liste.appendChild(div);
+    document.getElementById("liste").appendChild(div);
   });
 }
 
 function sendeFeedback() {
   const text = document.getElementById("feedback").value.trim();
-  const sender = localStorage.getItem("discordName") || "@Kommebald";
+  const sender = localStorage.getItem("discordName") || "Unbekannt";
   if (!text) return alert("Bitte Feedback eingeben.");
 
   const all = ladeFeedbacks();
@@ -156,19 +155,16 @@ function sendeFeedback() {
 }
 
 function holeMitglieder() {
-  fetch(`${API_BASE}/rolle/${roleId}`)
+  fetch(`${serverBaseUrl}/rolle/${roleId}`)
     .then(res => res.json())
     .then(zeigeMitglieder)
-    .catch(err => {
+    .catch(() => {
       document.getElementById("liste").textContent = "Fehler beim Laden der Mitglieder.";
-      console.error(err);
     });
 }
 
-// Theme setzen
 const theme = localStorage.getItem("theme");
 if (theme === "light") document.body.classList.add("light");
-
 holeMitglieder();
 </script>
 </body>

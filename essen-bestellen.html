@@ -1,44 +1,49 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Essen bestellen</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding-bottom: 60px;
       background-color: #1e1e2f;
       color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
       transition: background-color 0.3s, color 0.3s;
     }
+
     body.light {
       background-color: #f5f5f5;
       color: #111;
     }
-    body:not(.light) input[type="number"],
-    body:not(.light) input[type="text"] {
-    background-color: #333;
-    color: white;
-    border: 1px solid #555;
+
+    input[type="text"], input[type="number"] {
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      margin: 5px 0;
     }
 
-    body.light input[type="number"],
-    body.light input[type="text"] {
-    background-color: white;
-    color: black;
+    body.light input {
+      background: #fff;
+      color: #000;
     }
+
+    body:not(.light) input {
+      background: #333;
+      color: #fff;
+    }
+
     .steuerung {
       margin-bottom: 20px;
     }
-    .steuerung input[type="number"] {
-      width: 60px;
-    }
+
     .gerichte-container {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
     }
+
     .gericht {
       border: 1px solid #ccc;
       border-radius: 6px;
@@ -47,29 +52,31 @@
       background-color: #2e2e3f;
       transition: background-color 0.3s;
     }
+
     body.light .gericht {
       background-color: #fff;
     }
+
     button {
       margin-top: 10px;
       padding: 8px 16px;
-      background-color: #5865F2;
-      color: white;
       border: none;
       border-radius: 4px;
+      background-color: #5865F2;
+      color: white;
+      cursor: pointer;
     }
+
     body.light button {
       background-color: #0078d7;
     }
-    h2 {
-      margin-top: 30px;
-    }
+
     .footer {
       position: fixed;
       bottom: 10px;
       left: 10px;
       font-size: 0.9em;
-      color: #ccc;
+      color: #aaa;
     }
   </style>
 </head>
@@ -77,10 +84,13 @@
 
 <h1>Essen bestellen</h1>
 
-<label>Wohin soll geliefert werden? <input type="text" id="zielort" placeholder="z. B. Raum 3B, EG"></label>
+<label>📍 Wohin soll geliefert werden?
+  <input type="text" id="zielort" placeholder="z. B. Raum 3B, EG">
+</label>
 
 <div class="steuerung">
-  Menge: <input type="number" id="menge" value="1" min="1">
+  Menge:
+  <input type="number" id="menge" value="1" min="1">
   <button onclick="auswahlKategorie('alle')">Alles auswählen</button>
   <button onclick="auswahlKategorie('Getränke')">Nur Getränke</button>
   <button onclick="auswahlKategorie('Hauptgerichte')">Nur Hauptgerichte</button>
@@ -91,16 +101,14 @@
 
 <div id="gerichte-bereiche"></div>
 
-<button onclick="bestellungAbsenden()">Bestellung an Discord senden</button>
-<button onclick="window.location.href='Webseite.html'">Zurück</button>
-
 <h2 id="gesamt">Gesamt: 0 €</h2>
+
+<button onclick="bestellungAbsenden()">🧾 Bestellung absenden</button>
+<button onclick="window.location.href='webseite.html'">Zurück</button>
 
 <div class="footer">Made by kommebald</div>
 
 <script>
-const webhookURL = "https://discord.com/api/webhooks/1391809484564992141/fZDbZv_eIr4YQml2QmMv6kdrY5SG1JqhikobrbKJpUDcvWrzWBojawq6Itnj6REknDIG";
-
 const gerichte = {
   'Vorspeisen': [
     ['Bruschetta mit Tomaten & Basilikum', 750],
@@ -182,15 +190,15 @@ function render() {
 function updateTotal() {
   let summe = 0;
   document.querySelectorAll('.gericht input').forEach(input => {
-    const preis = parseInt(input.dataset.preis) || 0;
-    const menge = parseInt(input.value) || 0;
-    summe += preis * menge;
+    const preis = parseInt(input.dataset.preis);
+    const menge = parseInt(input.value);
+    if (menge > 0) summe += preis * menge;
   });
-  document.getElementById('gesamt').textContent = `Gesamt: ${summe} €`;
+  document.getElementById("gesamt").textContent = `Gesamt: ${summe} €`;
 }
 
 function auswahlKategorie(kategorie) {
-  const menge = parseInt(document.getElementById('menge').value) || 1;
+  const menge = parseInt(document.getElementById("menge").value) || 1;
   document.querySelectorAll('.gericht').forEach(div => {
     if (kategorie === 'alle' || div.dataset.kategorie === kategorie) {
       const input = div.querySelector('input');
@@ -207,10 +215,8 @@ function reset() {
 
 function bestellungAbsenden() {
   const zielort = document.getElementById("zielort").value.trim();
-  const discordName = localStorage.getItem("discordName") || "Unbekannt";
-
   if (!zielort) {
-    alert("Bitte gib an, wohin geliefert werden soll.");
+    alert("Bitte gib den Zielort an.");
     return;
   }
 
@@ -222,40 +228,46 @@ function bestellungAbsenden() {
     const menge = parseInt(input.value);
     const preis = parseInt(input.dataset.preis);
     if (menge > 0) {
-      const name = div.dataset.name;
-      bestellteGerichte.push(`${menge}× ${name} (${preis} €)`);
+      bestellteGerichte.push(`${menge}× ${div.dataset.name} (${preis} €)`);
       summe += menge * preis;
     }
   });
 
   if (bestellteGerichte.length === 0) {
-    alert("Du hast nichts ausgewählt!");
+    alert("Bitte wähle mindestens ein Gericht aus.");
     return;
   }
 
-  const nachricht = {
-    content:
-      "||<@&1349057747236425900>||\n" +
-      `**Neue Essensbestellung von ${discordName}:**\n` +
-      bestellteGerichte.join("\n") +
-      `\n\n📍 **Wohin:** ${zielort}` +
-      `\n💰 **Gesamtbetrag:** ${summe} €`
+  const von = localStorage.getItem("discordName") || "Unbekannt";
+
+  const bestellung = {
+    von,
+    ort: zielort,
+    summe,
+    inhalt: bestellteGerichte.join("\n")
   };
 
-  fetch(webhookURL, {
+  // 1. Speichern an API
+  fetch("https://food-feedback-bot.onrender.com/api/bestellungen", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(nachricht)
-  }).then(res => {
-    if (res.ok) {
-      alert("Bestellung wurde erfolgreich an Discord gesendet!");
-    } else {
-      alert("Fehler beim Senden an Discord.");
-    }
-  }).catch(() => alert("Netzwerkfehler beim Senden."));
+    body: JSON.stringify(bestellung)
+  });
+
+  // 2. Senden an Discord
+  fetch("https://discord.com/api/webhooks/1391809484564992141/fZDbZv_eIr4YQml2QmMv6kdrY5SG1JqhikobrbKJpUDcvWrzWBojawq6Itnj6REknDIG", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: `||<@&1349057747236425900>||\n📦 **Neue Bestellung von ${von}**\n📍 **Ort:** ${zielort}\n🧾 **Inhalt:**\n${bestellteGerichte.join("\n")}\n💰 **Gesamtbetrag:** ${summe} €`
+    })
+  });
+
+  alert("Bestellung wurde gesendet!");
+  reset();
+  document.getElementById("zielort").value = "";
 }
 
-// Theme anwenden beim Laden
 const theme = localStorage.getItem("theme");
 if (theme === "light") {
   document.body.classList.add("light");
@@ -263,5 +275,6 @@ if (theme === "light") {
 
 render();
 </script>
+
 </body>
 </html>

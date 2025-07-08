@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Login mit Discord</title>
+  <meta charset="UTF-8" />
+  <title>Willkommen – Discord Food Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,27 +14,56 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
+      margin: 0;
+      text-align: center;
     }
-    button {
-      padding: 10px 20px;
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .button {
+      padding: 12px 24px;
+      margin: 10px;
       font-size: 18px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background-color: #5865F2;
       color: white;
       cursor: pointer;
     }
-    button:hover {
+
+    .button:hover {
       background-color: #4752c4;
+    }
+
+    #manual {
+      margin-top: 20px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Login mit Discord</h1>
+  <h1>Willkommen 👋</h1>
+  <p>Du wirst gleich weitergeleitet...</p>
 
-  <a href="https://discord.com/api/oauth2/authorize?client_id=1391820808963489874&redirect_uri=https%3A%2F%2Fkommebald.github.io%2FK-G_Webseite%2Fcallback.html&response_type=token&scope=identify">
-    <button>Mit Discord anmelden</button>
-  </a>
+  <div id="manual">
+    <p>Keine automatische Weiterleitung? Wähle deine Version:</p>
+    <button class="button" onclick="window.location.href='mobile/index.html'">📱 Handy-Version</button>
+    <button class="button" onclick="window.location.href='desktop/index.html'">💻 PC-Version</button>
+  </div>
 
+  <script>
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+    setTimeout(() => {
+      const ziel = isMobile ? "mobile/index.html" : "desktop/index.html";
+      if (confirm(`Möchtest du die ${isMobile ? "Handy" : "PC"}-Version öffnen?`)) {
+        window.location.href = ziel;
+      } else {
+        document.getElementById("manual").style.display = "block";
+      }
+    }, 1500);
+  </script>
 </body>
 </html>

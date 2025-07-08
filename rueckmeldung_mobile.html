@@ -100,67 +100,66 @@ function speichereFeedback(id, eintrag) {
 }
 
 async function ladeMitglieder() {
-  try {
-    const res = await fetch(`${apiUrl}/rolle/1340398700136104069`);
-    const daten = await res.json();
-    const container = document.getElementById("liste");
-    daten.forEach(user => {
-      const el = document.createElement("div");
-      el.className = "mitglied";
-      el.innerHTML = `
-        <div class="mitglied-header">
-          <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-          <strong>${user.name}</strong>
-        </div>
-      `;
-      el.querySelector(".mitglied-header").onclick = () => {
-        if (el.querySelector(".feedback-container")) return;
+  const res = await fetch(`${apiUrl}/rolle/1340398700136104069`);
+  const daten = await res.json();
+  const container = document.getElementById("liste");
+  daten.forEach(user => {
+    const el = document.createElement("div");
+    el.className = "mitglied";
+    el.innerHTML = `
+      <div class="mitglied-header">
+        <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+        <strong>${user.name}</strong>
+      </div>
+    `;
 
-        const feedbackDiv = document.createElement("div");
-        feedbackDiv.className = "feedback-container";
+    el.querySelector(".mitglied-header").onclick = () => {
+      const existing = el.querySelector(".feedback-container");
+      if (existing) {
+        existing.remove();
+        return;
+      }
 
-        const list = ladeFeedback(user.id);
-        const listDiv = document.createElement("div");
-        listDiv.className = "feedback-list";
-        listDiv.innerHTML = list.length ? list.map(f => `• ${f}`).join("<br>") : "<em>Keine Feedbacks.</em>";
+      const feedbackDiv = document.createElement("div");
+      feedbackDiv.className = "feedback-container";
 
-        const textarea = document.createElement("textarea");
-        textarea.placeholder = "Feedback schreiben...";
+      const list = ladeFeedback(user.id);
+      const listDiv = document.createElement("div");
+      listDiv.className = "feedback-list";
+      listDiv.innerHTML = list.length ? list.map(f => `• ${f}`).join("<br>") : "<em>Keine Feedbacks.</em>";
 
-        const btn = document.createElement("button");
-        btn.className = "senden";
-        btn.textContent = "Absenden";
-        btn.onclick = () => {
-          const val = textarea.value.trim();
-          if (!val) return;
-          const msg = `${discordUser.username}: ${val}`;
-          speichereFeedback(user.id, msg);
-          listDiv.innerHTML += `<br>• ${msg}`;
-          textarea.value = "";
+      const textarea = document.createElement("textarea");
+      textarea.placeholder = "Feedback schreiben...";
 
-          fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: `**Feedback für ${user.name}:**\n> ${msg}` })
-          });
-        };
+      const btn = document.createElement("button");
+      btn.className = "senden";
+      btn.textContent = "Absenden";
+      btn.onclick = () => {
+        const val = textarea.value.trim();
+        if (!val) return;
+        const msg = `${discordUser.username}: ${val}`;
+        speichereFeedback(user.id, msg);
+        listDiv.innerHTML += `<br>• ${msg}`;
+        textarea.value = "";
 
-        feedbackDiv.appendChild(listDiv);
-        feedbackDiv.appendChild(textarea);
-        feedbackDiv.appendChild(btn);
-        el.appendChild(feedbackDiv);
+        fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: `**Feedback für ${user.name}:**\n> ${msg}` })
+        });
       };
-      container.appendChild(el);
-    });
-  } catch (err) {
-    document.getElementById("liste").textContent = "Fehler beim Laden der Mitglieder.";
-  }
+
+      feedbackDiv.appendChild(listDiv);
+      feedbackDiv.appendChild(textarea);
+      feedbackDiv.appendChild(btn);
+      el.appendChild(feedbackDiv);
+    };
+
+    container.appendChild(el);
+  });
 }
 
-if (localStorage.getItem("theme") === "light") {
-  document.body.classList.add("light");
-}
-
+if (localStorage.getItem("theme") === "light") document.body.classList.add("light");
 ladeMitglieder();
 </script>
 </body>

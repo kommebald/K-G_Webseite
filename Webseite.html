@@ -11,14 +11,12 @@
       --tile: #0078d7;
       --tile-hover: #005a9e;
     }
-
     body.light {
       --bg: #f5f5f5;
       --text: #111;
       --tile: white;
       --tile-hover: #e0e0e0;
     }
-
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -31,7 +29,6 @@
       transition: background-color 0.3s, color 0.3s;
       margin: 0;
     }
-
     .desktop {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -40,7 +37,6 @@
       margin-bottom: 20px;
       width: 90%;
     }
-
     .tile {
       background-color: var(--tile);
       border-radius: 10px;
@@ -50,27 +46,22 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       transition: transform 0.2s, background-color 0.3s;
     }
-
     .tile:hover {
       transform: scale(1.05);
       background-color: var(--tile-hover);
     }
-
     .tile-icon {
       font-size: 40px;
       margin-bottom: 10px;
     }
-
     .tile-title {
       font-size: 18px;
     }
-
     .footer, #clock {
       position: fixed;
       font-size: 0.9em;
       color: var(--text);
     }
-
     .footer { bottom: 10px; left: 10px; }
     #clock { bottom: 10px; right: 10px; }
 
@@ -85,7 +76,6 @@
       color: var(--text);
       cursor: pointer;
     }
-
     #theme-toggle:hover {
       background-color: var(--tile-hover);
     }
@@ -103,7 +93,6 @@
       align-items: center;
       gap: 10px;
     }
-
     #profil img {
       width: 40px;
       height: 40px;
@@ -135,6 +124,11 @@
       <div class="tile-icon">🃏</div>
       <div class="tile-title">Blackjack</div>
     </div>
+
+    <div class="tile" onclick="adminLogin()">
+      <div class="tile-icon">🔐</div>
+      <div class="tile-title">Admin Panel</div>
+    </div>
   </div>
 
   <div class="footer">Made by kommebald</div>
@@ -146,7 +140,6 @@
   </div>
 
   <script>
-    // Uhrzeit
     function updateClock() {
       const now = new Date().toLocaleTimeString("de-DE", { timeZone: "Europe/Berlin" });
       document.getElementById("clock").textContent = now;
@@ -168,19 +161,27 @@
       document.getElementById("theme-toggle").textContent = light ? "Dunkler Modus" : "Weißer Modus";
     });
 
-    // Profil anzeigen
+    // Profilanzeige
     const storedUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
-    const avatar = document.getElementById("avatar");
-    const username = document.getElementById("username");
-
     if (storedUser && storedUser.username) {
-      username.textContent = storedUser.global_name ? `${storedUser.global_name} (${storedUser.username})` : storedUser.username;
-      avatar.src = storedUser.avatar && storedUser.id
-        ? `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`
-        : "https://cdn-icons-png.flaticon.com/512/25/25694.png";
+      document.getElementById("username").textContent = storedUser.global_name || storedUser.username;
+      if (storedUser.id && storedUser.avatar) {
+        document.getElementById("avatar").src = `https://cdn.discordapp.com/avatars/${storedUser.id}/${storedUser.avatar}.png`;
+      } else {
+        document.getElementById("avatar").src = "https://cdn-icons-png.flaticon.com/512/25/25694.png";
+      }
     } else {
-      username.textContent = "Unbekannt";
-      avatar.src = "https://cdn-icons-png.flaticon.com/512/25/25694.png";
+      document.getElementById("username").textContent = "Unbekannt";
+    }
+
+    // Admin Login
+    function adminLogin() {
+      const passwort = prompt("🔐 Admin-Passwort eingeben:");
+      if (passwort === "Köstlich und Gut auf die Eins JTL") {
+        window.location.href = "admin_panel.html";
+      } else {
+        alert("❌ Falsches Passwort!");
+      }
     }
   </script>
 </body>

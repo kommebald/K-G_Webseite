@@ -22,10 +22,12 @@
       margin-bottom: 1rem;
       padding: 1rem;
       border-radius: 8px;
+      transition: background-color 0.3s; /* transition für theme */
     }
     body.light .mitglied {
       background-color: #fff;
       color: #000;
+      border: 1px solid #ccc;
     }
     .mitglied-header {
       display: flex;
@@ -45,122 +47,161 @@
     .feedback-list {
       font-size: 0.9rem;
       margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background-color: rgba(0, 0, 0, 0.1); /* Slightly darker for readability in dark mode */
+      border-radius: 4px;
+      word-wrap: break-word;
+    }
+    body.light .feedback-list {
+        background-color: rgba(0, 0, 0, 0.05); /* Lighter for readability in light mode */
     }
     textarea {
       width: 100%;
+      height: 60px;
       padding: 0.5rem;
+      margin-top: 0.5rem;
+      border: 1px solid #555;
       border-radius: 4px;
-      border: none;
-      resize: vertical;
-      background: #333;
+      background-color: #333; /* Dark Mode */
       color: white;
+      box-sizing: border-box;
+      resize: vertical;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s; /* transition for theme */
     }
     body.light textarea {
-      background: #eee;
-      color: black;
+      background-color: #fff; /* Light Mode */
+      color: #111;
+      border: 1px solid #ccc;
     }
     button.senden {
-      background: #5865F2;
-      color: white;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
       margin-top: 0.5rem;
-    }
-    .zurueck {
-      margin-top: 2rem;
-      background: #444;
-      border: none;
+      background-color: #5865F2;
       color: white;
-      padding: 0.5rem 1rem;
+      border: none;
       border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button.senden:hover {
+      background-color: #4752c4;
+    }
+    .zurueck-btn {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      background-color: grey;
+      color: white;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
-<h2>Rückmeldung</h2>
-<div id="liste"></div>
-<button class="zurueck" onclick="window.location.href='webseite_mobile.html'">Zurück</button>
+  <h1>Rückmeldung geben</h1>
 
-<script>
-const webhookUrl = "https://discord.com/api/webhooks/1392150424097915042/RQoNPfTIxyP7XUNJdOOHptgWWaKSDl6C8jh13puHQ3xcX7aWuDjaG5wHoE8PtV7c8QLa";
-const apiUrl = "https://food-feedback-bot.onrender.com";
-const discordUser = JSON.parse(localStorage.getItem("discordUser"));
+  <div id="container">
+    <p>Lade Mitglieder...</p>
+  </div>
 
-function ladeFeedback(id) {
-  const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
-  return all[id] || [];
-}
+  <button class="zurueck-btn" onclick="window.location.href='Webseite_mobile.html'">Zurück</button>
 
-function speichereFeedback(id, eintrag) {
-  const all = JSON.parse(localStorage.getItem("feedbacks") || "{}");
-  if (!all[id]) all[id] = [];
-  all[id].push(eintrag);
-  localStorage.setItem("feedbacks", JSON.stringify(all));
-}
+  <script>
+    const webhookUrl = "https://discord.com/api/webhooks/1268473955149152379/e29w-R6f7Jb-x-r4J2i27N-H00JjE-pUeR2-r4I0fN0g-B0cQ-f2fK7t2E0v0lC"; // Dein Discord Webhook URL
+    const discordUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
 
-async function ladeMitglieder() {
-  const res = await fetch(`${apiUrl}/rolle/1340398700136104069`);
-  const daten = await res.json();
-  const container = document.getElementById("liste");
-  daten.forEach(user => {
-    const el = document.createElement("div");
-    el.className = "mitglied";
-    el.innerHTML = `
-      <div class="mitglied-header">
-        <img src="${user.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-        <strong>${user.name}</strong>
-      </div>
-    `;
+    const dummyMembers = [
+      { id: "123456789", name: "Max Mustermann", avatar: "https://cdn-icons-png.flaticon.com/512/25/25694.png" },
+      { id: "987654321", name: "Erika Mustermann", avatar: "https://cdn-icons-png.flaticon.com/512/25/25694.png" }
+    ];
 
-    el.querySelector(".mitglied-header").onclick = () => {
-      const existing = el.querySelector(".feedback-container");
-      if (existing) {
-        existing.remove();
-        return;
+    function speichereFeedback(userId, feedbackText) {
+      const feedbacks = JSON.parse(localStorage.getItem("feedbacks") || "{}");
+      if (!feedbacks[userId]) {
+        feedbacks[userId] = [];
       }
+      feedbacks[userId].push(feedbackText);
+      localStorage.setItem("feedbacks", JSON.stringify(feedbacks));
+    }
 
-      const feedbackDiv = document.createElement("div");
-      feedbackDiv.className = "feedback-container";
+    function ladeFeedback(userId) {
+      const feedbacks = JSON.parse(localStorage.getItem("feedbacks") || "{}");
+      return feedbacks[userId] || [];
+    }
 
-      const list = ladeFeedback(user.id);
-      const listDiv = document.createElement("div");
-      listDiv.className = "feedback-list";
-      listDiv.innerHTML = list.length ? list.map(f => `• ${f}`).join("<br>") : "<em>Keine Feedbacks.</em>";
+    function renderMembers(members) {
+      const container = document.getElementById("container");
+      container.innerHTML = ''; // Leere den Ladehinweis
 
-      const textarea = document.createElement("textarea");
-      textarea.placeholder = "Feedback schreiben...";
+      members.forEach(user => {
+        const el = document.createElement("div");
+        el.className = "mitglied";
 
-      const btn = document.createElement("button");
-      btn.className = "senden";
-      btn.textContent = "Absenden";
-      btn.onclick = () => {
-        const val = textarea.value.trim();
-        if (!val) return;
-        const msg = `${discordUser.username}: ${val}`;
-        speichereFeedback(user.id, msg);
-        listDiv.innerHTML += `<br>• ${msg}`;
-        textarea.value = "";
+        const header = document.createElement("div");
+        header.className = "mitglied-header";
+        header.innerHTML = `<img src="${user.avatar}" alt="${user.name}"><span>${user.name}</span>`;
+        el.appendChild(header);
 
-        fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: `**Feedback für ${user.name}:**\n> ${msg}` })
-        });
-      };
+        header.onclick = () => {
+          const existing = el.querySelector(".feedback-container");
+          if (existing) {
+            existing.remove();
+            return;
+          }
 
-      feedbackDiv.appendChild(listDiv);
-      feedbackDiv.appendChild(textarea);
-      feedbackDiv.appendChild(btn);
-      el.appendChild(feedbackDiv);
-    };
+          const feedbackDiv = document.createElement("div");
+          feedbackDiv.className = "feedback-container";
 
-    container.appendChild(el);
-  });
-}
+          const list = ladeFeedback(user.id);
+          const listDiv = document.createElement("div");
+          listDiv.className = "feedback-list";
+          listDiv.innerHTML = list.length ? list.map(f => `• ${f}`).join("<br>") : "<em>Keine Feedbacks.</em>";
 
-if (localStorage.getItem("theme") === "light") document.body.classList.add("light");
-ladeMitglieder();
-</script>
+          const textarea = document.createElement("textarea");
+          textarea.placeholder = "Feedback schreiben...";
+
+          const btn = document.createElement("button");
+          btn.className = "senden";
+          btn.textContent = "Absenden";
+          btn.onclick = () => {
+            const val = textarea.value.trim();
+            if (!val) return;
+            const msg = `${discordUser.username}: ${val}`; // Nutze den angemeldeten Usernamen
+            speichereFeedback(user.id, msg);
+            listDiv.innerHTML += `<br>• ${msg}`;
+            textarea.value = "";
+
+            fetch(webhookUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                content: `**Feedback für ${user.name} von ${discordUser.global_name || discordUser.username || "Unbekannt"}:**\n> ${msg}`
+              })
+            });
+          };
+
+          feedbackDiv.appendChild(listDiv);
+          feedbackDiv.appendChild(textarea);
+          feedbackDiv.appendChild(btn);
+          el.appendChild(feedbackDiv);
+        };
+
+        container.appendChild(el);
+      });
+    }
+
+    // Set theme on load
+    if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light");
+    }
+
+    // Lade Mitglieder beim Start
+    renderMembers(dummyMembers);
+  </script>
 </body>
 </html>

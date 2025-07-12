@@ -26,11 +26,6 @@
       border-radius: 8px;
     }
 
-    #passwordSection {
-      text-align: center;
-      margin-top: 100px;
-    }
-
     input[type="password"] {
       padding: 10px;
       font-size: 16px;
@@ -60,63 +55,100 @@
       left: 20px;
       background-color: grey;
     }
+
+    .delete-all-btn {
+      background-color: #ff3333;
+      margin-bottom: 20px;
+    }
+    .delete-all-btn:hover {
+      background-color: #cc0000;
+    }
   </style>
 </head>
 <body>
 
   <h1>📬 Alle Feedbacks</h1>
 
-  <div id="passwordSection">
-    <p>Bitte erneut das Admin-Passwort eingeben:</p>
-    <input type="password" id="pw" placeholder="Passwort">
-    <br />
-    <button onclick="checkPassword()">Bestätigen</button>
-  </div>
+  <button class="delete-all-btn" onclick="deleteAllFeedbacks()">Alle Feedbacks löschen</button>
 
-  <div id="feedbacks" style="display:none;"></div>
+  <div id="feedbacks">
+    <p>Feedbacks werden geladen...</p>
+  </div>
 
   <button class="zurueck-btn" onclick="window.location.href='admin_panel.html'">Zurück</button>
 
   <script>
-    const correctPassword = "Köstlich und Gut auf die Eins JTL";
+    const ADMIN_DISCORD_IDS = [
+        "1196556299597521027",
+        "1268473955149152379",
+        "1072146615252566158",
+        "1063895939724624023"
+    ];
 
-    function checkPassword() {
-      const pw = document.getElementById("pw").value.trim();
-      if (pw === correctPassword) {
-        document.getElementById("passwordSection").style.display = "none";
-        document.getElementById("feedbacks").style.display = "block";
+    const storedUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
+
+    if (!storedUser || !storedUser.id || !ADMIN_DISCORD_IDS.includes(storedUser.id)) {
+        window.location.href = "Webseite.html";
+    } else {
         loadFeedbacks();
-      } else {
-        alert("Falsches Passwort");
-        window.location.href = "admin_panel.html";
-      }
     }
 
+    const feedbackApiUrl = "https://food-feedback-bot.onrender.com/api/feedbacks";
+
     function loadFeedbacks() {
-      fetch("https://food-feedback-bot.onrender.com/api/feedbacks")
+      const container = document.getElementById("feedbacks");
+      container.innerHTML = "<p>Feedbacks werden geladen...</p>";
+
+      fetch(feedbackApiUrl)
         .then(res => res.json())
         .then(data => {
-          const container = document.getElementById("feedbacks");
           if (data.length === 0) {
             container.innerHTML = "<p>Keine Feedbacks vorhanden.</p>";
             return;
           }
 
+          container.innerHTML = '';
           data.reverse().forEach(entry => {
             const div = document.createElement("div");
             div.className = "feedback";
+            const timestamp = entry.timestamp ? new Date(entry.timestamp).toLocaleString('de-DE') : 'Unbekanntes Datum';
             div.innerHTML = `
               <strong>Von:</strong> ${entry.von || "Unbekannt"}<br>
               <strong>An:</strong> ${entry.an || "Unbekannt"}<br>
-              <strong>Nachricht:</strong><br>${entry.text}
+              <strong>Nachricht:</strong><br>${entry.text}<br>
+              <small><em>Gesendet am: ${timestamp}</em></small>
             `;
             container.appendChild(div);
           });
         })
         .catch(err => {
-          document.getElementById("feedbacks").innerHTML = "<p>Fehler beim Laden der Feedbacks.</p>";
+          container.innerHTML = "<p>Fehler beim Laden der Feedbacks.</p>";
           console.error(err);
         });
+    }
+
+    function deleteAllFeedbacks() {
+      if (confirm("Bist du SICHER, dass du ALLE Feedbacks löschen möchtest? Dies kann NICHT rückgängig gemacht werden!")) {
+        fetch(feedbackApiUrl, {
+          method: "DELETE",
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => {
+          if (res.ok) {
+            alert("Alle Feedbacks erfolgreich gelöscht!");
+            loadFeedbacks();
+          } else {
+            alert("Fehler beim Löschen der Feedbacks. Status: " + res.status);
+            console.error(res);
+          }
+        })
+        .catch(err => {
+          alert("Netzwerkfehler beim Löschen der Feedbacks.");
+          console.error(err);
+        });
+      }
     }
   </script>
 </body>

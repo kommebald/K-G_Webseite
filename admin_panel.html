@@ -61,6 +61,18 @@
   <button class="zurueck-btn" onclick="window.location.href='Webseite.html'">Zurück</button>
 
   <script>
+    const ADMIN_DISCORD_IDS = [
+        "1196556299597521027",
+        "1268473955149152379",
+        "1072146615252566158",
+        "1063895939724624023"
+    ];
+
+    const storedUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
+
+    if (!storedUser || !storedUser.id || !ADMIN_DISCORD_IDS.includes(storedUser.id)) {
+        window.location.href = "Webseite.html";
+    }
   </script>
 </body>
 </html>

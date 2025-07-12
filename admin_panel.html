@@ -13,7 +13,7 @@
     }
 
     #panel {
-      display: none;
+      display: block;
     }
 
     input[type="password"] {
@@ -52,13 +52,6 @@
 
   <h1>🔐 Admin Panel</h1>
 
-  <div id="login">
-    <p>Bitte gib das Admin-Passwort ein:</p>
-    <input type="password" id="passwordInput" placeholder="Passwort eingeben" />
-    <br />
-    <button onclick="checkPassword()">Bestätigen</button>
-  </div>
-
   <div id="panel">
     <h2>Zugriff gewährt</h2>
     <button onclick="location.href='feedbacks.html'">📬 Feedbacks ansehen</button>
@@ -68,18 +61,6 @@
   <button class="zurueck-btn" onclick="window.location.href='Webseite.html'">Zurück</button>
 
   <script>
-    function checkPassword() {
-      const input = document.getElementById("passwordInput").value.trim();
-      const correct = "Köstlich und Gut auf die Eins JTL";
-
-      if (input === correct) {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("panel").style.display = "block";
-      } else {
-        alert("Falsches Passwort. Zugriff verweigert.");
-        window.location.href = "webseite.html";
-      }
-    }
   </script>
 </body>
 </html>

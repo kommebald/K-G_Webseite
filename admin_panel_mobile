@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel (Mobil)</title>
+  <style>
+    body {
+      background-color: #1e1e2f;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 30px;
+    }
+
+    #panel {
+      display: block;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h2 {
+      font-size: 1.3em;
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 80%;
+      max-width: 300px;
+      padding: 15px 20px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      background-color: #5865F2;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #4752c4;
+      transform: translateY(-2px);
+    }
+
+    .zurueck-btn {
+      background-color: grey;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: auto;
+      max-width: none;
+      padding: 10px 15px;
+      font-size: 1em;
+      box-shadow: none;
+    }
+    .zurueck-btn:hover {
+        transform: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔐 Admin Panel</h1>
+
+  <div id="panel">
+    <h2>Zugriff gewährt</h2>
+    <button onclick="location.href='feedbacks_mobile.html'">📬 Feedbacks ansehen</button>
+    <button onclick="location.href='alle_bestellungen_mobile.html'">📦 Alle Bestellungen ansehen</button>
+  </div>
+
+  <button class="zurueck-btn" onclick="window.location.href='Webseite.html'">Zurück</button>
+
+  <script>
+    const ADMIN_DISCORD_IDS = [
+        "1196556299597521027",
+        "1268473955149152379",
+        "1072146615252566158",
+        "1063895939724624023"
+    ];
+
+    const storedUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
+
+    if (!storedUser || !storedUser.id || !ADMIN_DISCORD_IDS.includes(storedUser.id)) {
+        window.location.href = "Webseite.html";
+    }
+  </script>
+</body>
+</html>

@@ -34,11 +34,6 @@
       cursor: pointer;
     }
 
-    #passwortContainer {
-      text-align: center;
-      margin-top: 100px;
-    }
-
     input[type="password"] {
       padding: 10px;
       font-size: 16px;
@@ -61,69 +56,66 @@
     button:hover {
       background-color: #4752c4;
     }
-
-    #inhalte {
-      display: none;
-    }
   </style>
 </head>
 <body>
 
   <h1>📦 Alle Bestellungen</h1>
 
-  <div id="passwortContainer">
-    <p>Bitte Admin-Passwort eingeben:</p>
-    <input type="password" id="pw" placeholder="Passwort">
-    <br>
-    <button onclick="checkPW()">Bestätigen</button>
-  </div>
-
-  <div id="inhalte">
-    <div id="bestellungen"></div>
+  <div id="bestellungen">
+    <p>Bestellungen werden geladen...</p>
   </div>
 
   <button class="zurueck-btn" onclick="window.location.href='admin_panel.html'">Zurück</button>
 
   <script>
-    const korrektesPW = "Köstlich und Gut auf die Eins JTL";
+    const ADMIN_DISCORD_IDS = [
+        "1196556299597521027",
+        "1268473955149152379",
+        "1072146615252566158",
+        "1063895939724624023"
+    ];
 
-    function checkPW() {
-      const eingabe = document.getElementById("pw").value.trim();
-      if (eingabe === korrektesPW) {
-        document.getElementById("passwortContainer").style.display = "none";
-        document.getElementById("inhalte").style.display = "block";
+    const storedUser = JSON.parse(localStorage.getItem("discordUser") || "{}");
+
+    if (!storedUser || !storedUser.id || !ADMIN_DISCORD_IDS.includes(storedUser.id)) {
+        window.location.href = "Webseite.html";
+    } else {
         ladeBestellungen();
-      } else {
-        alert("Falsches Passwort!");
-        window.location.href = "admin_panel.html";
-      }
     }
 
+    const bestellungenApiUrl = "https://food-feedback-bot.onrender.com/api/bestellungen";
+
     function ladeBestellungen() {
-      fetch("https://food-feedback-bot.onrender.com/api/bestellungen")
+      const container = document.getElementById("bestellungen");
+      container.innerHTML = "<p>Bestellungen werden geladen...</p>";
+
+      fetch(bestellungenApiUrl)
         .then(res => res.json())
         .then(daten => {
-          const container = document.getElementById("bestellungen");
           if (daten.length === 0) {
             container.innerHTML = "<p>Keine Bestellungen gefunden.</p>";
             return;
           }
 
+          container.innerHTML = '';
           daten.reverse().forEach(b => {
             const div = document.createElement("div");
             div.className = "bestellung";
+            const timestamp = b.timestamp ? new Date(b.timestamp).toLocaleString('de-DE') : 'Unbekanntes Datum';
             div.innerHTML = `
               <strong>Von:</strong> ${b.von || "Unbekannt"}<br>
               <strong>Ort:</strong> ${b.ort}<br>
               <strong>Gesamtbetrag:</strong> ${b.summe} €<br>
-              <strong>Inhalt:</strong><br>${b.inhalt.replace(/\n/g, "<br>")}
+              <strong>Inhalt:</strong><br>${b.inhalt.replace(/\n/g, "<br>")}<br>
+              <small><em>Bestellt am: ${timestamp}</em></small>
             `;
             container.appendChild(div);
           });
         })
         .catch(err => {
           console.error(err);
-          document.getElementById("bestellungen").innerHTML = "<p>Fehler beim Laden der Daten.</p>";
+          container.innerHTML = "<p>Fehler beim Laden der Daten.</p>";
         });
     }
   </script>

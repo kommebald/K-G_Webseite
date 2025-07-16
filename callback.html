@@ -14,7 +14,7 @@
         if (!token) {
             alert("Discord-Login fehlgeschlagen. Bitte versuche es erneut.");
             // Optional: Zurück zur Login-Seite leiten
-            window.location.href = "login.html"; // Annahme, dass deine Login-Seite so heißt
+            window.location.href = "index.html"; // Annahme, dass deine Login-Seite so heißt
         } else {
             // Holen der Benutzerdaten von Discord
             fetch("https://discord.com/api/users/@me", {
@@ -55,9 +55,8 @@
                 console.error("Fehler beim Abrufen der Discord-Daten:", error);
                 alert("Ein Fehler ist aufgetreten beim Abrufen deiner Discord-Daten. Bitte versuche es erneut.");
                 // Optional: Zurück zur Login-Seite leiten
-                window.location.href = "login.html";
+                window.location.href = "index.html";
             });
         }
     </script>
 </body>
-</html>
